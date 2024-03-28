@@ -26,7 +26,7 @@ POST - description:" retrieve document after payment"
 Router for delivery:
 GET - description:" get payement preference"
 GET - description:" retrieve state of delivery"
-GET - description:" retrieve the price of a delivery based on distance"
+GET - description:" retrieve the price of a delivery based on distance ( procedure stocké)"
 
 
 Router for Admin:

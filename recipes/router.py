@@ -1,6 +1,6 @@
 import users.models as models
 from typing import Annotated
-from .schema import UserBase
+from .schema import RecipesBase
 from fastapi import APIRouter, FastAPI, Depends, status
 from sqlalchemy.orm import Session
 import main as get_db
@@ -22,7 +22,7 @@ db_dependency= Annotated[Session, Depends(get_db)]
 
 
 @router.get("/recipes/", status_code= status.HTTP_200_OK)
-async def get_recipes(user:UserBase, db: db_dependency):
-    db_user= models(**user.model_dump())
+async def get_recipes(recipes:RecipesBase, db: db_dependency):
+    db_user= models(**recipes.model_dump())
     db.add(db_user)
     db.commit()

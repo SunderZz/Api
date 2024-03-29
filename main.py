@@ -2,9 +2,8 @@ from fastapi import APIRouter, FastAPI, Depends
 from typing import Annotated
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
-from starlette.types import Scope, Send, Receive, Message, ASGIApp
+from starlette.types import ASGIApp
 
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
 from admin.router import router as admin_router
@@ -76,11 +75,5 @@ app.include_router(unit_router)
 app.include_router(users_router)
 app.include_router(users_adresses_router)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CAPACITOR_ORIGIN,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 

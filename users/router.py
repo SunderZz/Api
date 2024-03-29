@@ -1,7 +1,7 @@
 import users.models as models
 from typing import Annotated
 from .schema import UserBase
-from fastapi import APIRouter, FastAPI, Depends, status
+from fastapi import APIRouter,  Depends, status
 from sqlalchemy.orm import Session
 import main as get_db
 from database import engine, SessionLocal

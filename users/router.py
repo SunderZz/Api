@@ -5,8 +5,7 @@ from fastapi import APIRouter,  Depends, status
 from sqlalchemy.orm import Session
 import main as get_db
 from database import engine, SessionLocal
-from repository import UserRepository
-from sqlalchemy.ext.asyncio import AsyncSession
+
 
 def get_db():
     db = SessionLocal
@@ -22,7 +21,8 @@ models.Base.metadata.create_all(bind=engine)
 db_dependency= Annotated[Session, Depends(get_db)]
 
 
-@router.post("/users/", status_code=status.HTTP_201_CREATED)
-async def create_user(user: UserBase, repo : UserRepository, db: AsyncSession = Depends(SessionLocal)):
-    await repo.create_user(db, user.first_name, user.name, user.mail, user.password)
-    return user
+@router.post("/users/", status_code= status.HTTP_201_CREATED)
+async def create_user(user:UserBase, db: db_dependency):
+    db_user= models(**user.model_dump())
+    db.add(db_user)
+    db.commit()

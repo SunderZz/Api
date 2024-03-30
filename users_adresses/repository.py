@@ -1,6 +1,14 @@
-from sqlalchemy.orm import Session
-from users_adresses.models import Users_adresses
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 
-def get_adress(db: Session, user_id: int, new_email: str)-> Users_adresses | None :
-    db.execute("CALL update_user_email(:user_id, :new_email)", {"user_id": user_id, "new_email": new_email})
-    db.commit()
+class UserRepository:
+
+    async def create_user(self, db: AsyncSession, f_name: str, name: str, mail: str, password: str):
+        sql_call = text("CALL create_user(:f_name, :name, :mail, :password)")
+        
+        await db.execute(sql_call, {"f_name": f_name, "name": name, "mail": mail, "password": password})
+        await db.commit()
+
+#TODO
+#         PUT
+#         GET

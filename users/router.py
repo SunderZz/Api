@@ -6,9 +6,8 @@ from sqlalchemy.orm import Session
 import main as get_db
 from database import engine, SessionLocal
 
-
 def get_db():
-    db = SessionLocal
+    db = SessionLocal()
     try: 
         yield db
     finally:
@@ -20,9 +19,17 @@ models.Base.metadata.create_all(bind=engine)
 
 db_dependency= Annotated[Session, Depends(get_db)]
 
+@router.get("/users/", status_code= status.HTTP_201_CREATED)
+async def get_users(db: db_dependency):
+    users= db.query(models.Users).all()
+    return {"user":users}
 
-@router.post("/users/", status_code= status.HTTP_201_CREATED)
-async def create_user(user:UserBase, db: db_dependency):
-    db_user= models(**user.model_dump())
+    
+@router.post("/users/", status_code=status.HTTP_201_CREATED)
+async def create_user(user: UserBase, db: Session = Depends(get_db)):
+    db_user = models.Users(**user.model_dump())
     db.add(db_user)
     db.commit()
+    db.refresh(db_user)
+    return db_user
+

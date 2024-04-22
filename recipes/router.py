@@ -1,4 +1,4 @@
-import users.models as models
+import recipes.models as models
 from typing import Annotated
 from .schema import RecipesBase
 from fastapi import APIRouter, FastAPI, Depends, status
@@ -8,7 +8,7 @@ from database import engine, SessionLocal
 
 
 def get_db():
-    db = SessionLocal
+    db = SessionLocal()
     try: 
         yield db
     finally:
@@ -22,7 +22,6 @@ db_dependency= Annotated[Session, Depends(get_db)]
 
 
 @router.get("/recipes/", status_code= status.HTTP_200_OK)
-async def get_recipes(recipes:RecipesBase, db: db_dependency):
-    db_user= models(**recipes.model_dump())
-    db.add(db_user)
-    db.commit()
+async def get_recipes(db: db_dependency):
+    recipes= db.query(models.Recipes).all()
+    return {"recipes":recipes}

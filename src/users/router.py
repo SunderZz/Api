@@ -33,3 +33,7 @@ async def create_user(user: UserBase, db: Session = Depends(get_db)):
     db.refresh(db_user)
     return db_user
 
+# get user 
+# get all user
+# create user
+#put user

@@ -31,3 +31,8 @@ async def get_shipment(db: db_dependency):
 async def put_shipment(db: db_dependency):
     shipment= db.query(models.Shipments_Cost).all()
     return {"shipment":shipment}
+
+#get shipment cost
+# post shipment cost
+# put shipment cost
+# get calculate shipment cost

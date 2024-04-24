@@ -26,3 +26,6 @@ async def create_user(payment:PaymentBase, db: db_dependency):
     db_user= models(**payment.model_dump())
     db.add(db_user)
     db.commit()
+
+    #get paymenet
+    #post payment

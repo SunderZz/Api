@@ -26,3 +26,7 @@ async def create_user(order:OrdersBase, db: db_dependency):
     db_user= models(**order.model_dump())
     db.add(db_user)
     db.commit()
+
+    #get order
+    # post order
+    #put order

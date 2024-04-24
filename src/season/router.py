@@ -30,3 +30,8 @@ db_dependency= Annotated[Session, Depends(get_db)]
 # async def get_season(db: db_dependency):
 #     season= db.query(models.Season).all()
 #     return {"season":season}
+
+#get season
+#get season based on product
+#put season
+#post season

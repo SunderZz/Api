@@ -26,3 +26,7 @@ async def create_user(preferenceship:PreferenceshipBase, db: db_dependency):
     db_user= models(**preferenceship.model_dump())
     db.add(db_user)
     db.commit()
+
+#get preference_ship based on id order
+#put preference_ship
+#post preference_ship

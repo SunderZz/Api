@@ -33,3 +33,9 @@ async def create_user(produit_image:ProduitImageBase, db: db_dependency):
     db_user= models(**produit_image.model_dump())
     db.add(db_user)
     db.commit()
+
+#get image
+#get image based on id user
+#put image
+#post image
+#delete image

@@ -45,4 +45,5 @@ special router :
 GET- description:" retrieve something based on query( in product, recipes, producers)"
 
 
-.\env\Scripts\Activate.ps1
+.\env\Scripts\Activate.ps1 dans api
+uvicorn main:app dans src

@@ -63,11 +63,7 @@ async def get_products(db: db_dependency):
 
     
 # Router for Product:
+# get all products
 # GET-description:"Retrieve all Product base on criteria"
-# PUT-description:"Modify the state of the cart 
-# ( need func to add price and the quantity in it)"
-# GET - description:" find by querie(s)"
-# POST - description:" Give a notice for a product"
 # POST - description:"create a page for a product"
 # PUT - description:" Modify the state of the product"
-# GET -description :" Retrieve only discount product"

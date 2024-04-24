@@ -30,3 +30,8 @@ async def get_users(db: db_dependency):
 async def get_users(db: db_dependency):
     unit= db.query(models.Unit).all()
     return {"unit":unit}
+
+#get unit
+#get this unit
+#put unit
+#post unit

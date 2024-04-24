@@ -26,3 +26,9 @@ async def create_user(producers:ProducersBase, db: db_dependency):
     db_user= models(**producers.model_dump())
     db.add(db_user)
     db.commit()
+
+#get producers
+#get products from producers
+#post producers
+#put producers
+#accept producers

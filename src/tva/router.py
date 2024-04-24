@@ -30,3 +30,8 @@ async def get_tva(db: db_dependency):
 async def put_tva(db: db_dependency):
     tva= db.query(models.Tva).all()
     return {"tva":tva}
+
+#get tva
+#get calculated tva
+#put tva
+#post tva

@@ -25,3 +25,8 @@ db_dependency= Annotated[Session, Depends(get_db)]
 async def get_recipes(db: db_dependency):
     recipes= db.query(models.Recipes).all()
     return {"recipes":recipes}
+
+#get recipes
+#get recipes based on product
+#put recipes
+#post recipes

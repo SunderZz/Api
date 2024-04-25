@@ -8,6 +8,3 @@ class UnitBase(BaseModel):
 
 class UnitValueSchema(BaseModel):
     value: float | int | None
-
-    class Config:
-        orm_mode = True

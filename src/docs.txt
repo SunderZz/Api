@@ -47,3 +47,8 @@ GET- description:" retrieve something based on query( in product, recipes, produ
 
 .\env\Scripts\Activate.ps1 dans api
 uvicorn main:app dans src
+
+PROBLEME:
+
+Endpoint Post de UserAdresse
+Endpoint TVA: peut etre un float

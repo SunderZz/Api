@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from datetime import date
 
 class UsersAdressesBase(BaseModel):
@@ -8,6 +8,3 @@ class UsersAdressesBase(BaseModel):
     Modification: date | None = None
     Latitude: float
     Longitude: float
-
-class UsersAdressesInDB(UsersAdressesBase):
-    Id_Users_adresses: int

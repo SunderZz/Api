@@ -4,15 +4,12 @@ from .schema import AdminBase
 from fastapi import APIRouter, FastAPI, Depends, status
 from sqlalchemy.orm import Session
 import main as get_db
-from database import engine, SessionLocal
+from database import engine, AsyncSessionLocal
 
 
-def get_db():
-    db = SessionLocal()
-    try: 
-        yield db
-    finally:
-        db.close_all()
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
 
 router = APIRouter(tags=["admin"])
 

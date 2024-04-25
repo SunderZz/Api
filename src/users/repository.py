@@ -2,30 +2,25 @@ from sqlalchemy.orm import Session
 from .models import Users
 
 class UsersRepository:
-    def create_user(db: Session, F_Name: str, name: str, mail: str, password: str) -> Users:
-        db_user = Users(F_Name=F_Name, name=name, mail=mail, password=password)
+    async def get_user(self,db: Session, user_id: int):
+        return db.query(Users).filter(Users.Id_Users == user_id).first()
+
+    async def get_all_users(self,db: Session):
+        return db.query(Users).all()
+
+    async def create_user(self,db: Session, user: Users):
+        db_user = Users(**user.dict())
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
         return db_user
 
-    def create_user(db: Session, user: Users):
-        db.add(user)
+    async def update_user(self,db: Session, user_id: int, user_data: Users):
+        db_user = db.query(Users).filter(Users.Id_Users == user_id).first()
+        if db_user is None:
+            return None
+        for key, value in user_data.__dict__.items():
+            setattr(db_user, key, value)
         db.commit()
-        db.refresh(user)
-        return user
-
-    def get_user_by_id(db: Session, user_id: int):
-        return db.query(Users).filter(Users.id == user_id).first()
-
-    def get_all_users(db: Session):
-        return db.query(Users).all()
-
-    def update_user(db: Session, user: Users):
-        db.query(Users).filter(Users.id == user.id).update(user.__dict__)
-        db.commit()
-        return get_user_by_id(db, user.id)
-
-    def delete_user(db: Session, user_id: int):
-        db.query(Users).filter(Users.id == user_id).delete()
-        db.commit()
+        db.refresh(db_user)
+        return db_user

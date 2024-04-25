@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI, Depends
 from typing import Annotated
-from database import engine, SessionLocal
+from database import engine, AsyncSessionLocal
 from sqlalchemy.orm import Session
 from starlette.types import ASGIApp
 
@@ -42,12 +42,10 @@ class ContentTypeMiddleware:
         self.default = default
 
 
-def get_db():
-    db = SessionLocal()
-    try: 
-        yield db
-    finally:
-        db.close_all()
+
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
 
 db_dependency= Annotated[Session, Depends(get_db)]
 

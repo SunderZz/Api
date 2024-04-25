@@ -1,15 +1,29 @@
+from datetime import datetime
 from sqlalchemy.orm import Session
 from .models import Users_adresses
 
 class UsersAdressesRepository:
 
-    def get_users_adresses(db: Session, user_id: int, users_adresse : Users_adresses)-> Users_adresses:
-        return db.query(users_adresse).filter(users_adresse.Id_Users_adresses == user_id).first()
-    
-    def create_user(db:Session,users_id:int,  user_address: Users_adresses)-> Users_adresses:
-        db_user=db.query(user_address).filter(user_address.Id_Users_adresses == users_id).first()
-        db_user_address = user_address(**user_address.dict(), user_id=users_id)
-        db.add(db_user_address)
+    def get_user_addresses(db: Session, user_id: int) -> list[Users_adresses]:
+        return db.query(Users_adresses).filter(Users_adresses.Id_Users_adresses == user_id).all()
+
+
+    def create_user_address(db: Session, user_id: int, address: Users_adresses) -> Users_adresses:
+        address_data = address.dict(by_alias=True)
+        db_address = Users_adresses(**address_data)
+        db.add(db_address)
         db.commit()
-        db.refresh(db_user_address)
-        return db_user
+        db.refresh(db_address)
+        return db_address
+
+
+    def update_user_address(db: Session, address_id: int, address: Users_adresses) -> Users_adresses:
+        user_address = db.query(Users_adresses).filter(Users_adresses.Id_Users_adresses == address_id).first()
+        user_address.Adresse = address.Adresse
+        user_address.Phone = address.Phone
+        user_address.Creation = address.Creation
+        user_address.Modification = datetime.now()
+        user_address.Latitude = address.Latitude
+        user_address.Longitude = address.Longitude
+        db.commit()
+        return user_address

@@ -1,5 +1,5 @@
 from datetime import datetime
-from http.client import HTTPException
+from fastapi import HTTPException
 import users_adresses.models as models
 import main as get_db
 from typing import Annotated
@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal
 from .repository import UsersAdressesRepository
-
+from common import model_to_dict
 
 def get_db():
     db = SessionLocal()
@@ -24,35 +24,24 @@ models.Base.metadata.create_all(bind=engine)
 db_dependency= Annotated[Session, Depends(get_db)]
 
 
-@router.get("users_adresses/{user_id}", response_model=UsersAdressesInDB, summary="get users adresses")
-def read_users_adresses(user_id: int, db: Session = Depends(get_db), repository= UsersAdressesRepository):
-    db_user_adresses = repository.get_users_adresses(db, user_id)
-    if db_user_adresses is None:
-        raise HTTPException(status_code=404, detail="User address not found")
-    return db_user_adresses
+@router.get("/users/{user_id}/addresses", response_model=list[UsersAdressesBase])
+def get_user_addresses(user_id: int, db: Session = Depends(get_db))->list[UsersAdressesBase]:
+    addresses = UsersAdressesRepository.get_user_addresses(db, user_id)
+    if not addresses:
+        raise HTTPException(status_code=404, detail="User addresses not found")
+    addresses_dict = [model_to_dict(address) for address in addresses]
+    return [UsersAdressesBase(**address_dict) for address_dict in addresses_dict]
 
 
-@router.post("/users/{user_id}/address")
-def create_user_address(users_id: int, user_address: UsersAdressesBase, db: Session = Depends(get_db)):
-    db_user = db.query(models.Users_adresses).filter(models.Users_adresses.Id_Users_adresses == users_id).first()
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    db_user_address = models.Users_adresses(**user_address.dict(), user_id=users_id)
-    db.add(db_user_address)
-    db.commit()
-    db.refresh(db_user_address)
-    return db_user_address
+@router.post("/users_adresses/{user_id}/addresses", response_model=UsersAdressesBase)
+def create_user_address(user_id: int, address: UsersAdressesBase, db: Session = Depends(get_db)) -> UsersAdressesBase:
+    db_address = UsersAdressesRepository.create_user_address(db, user_id, address)
+    address_dict = model_to_dict(db_address) 
+    return UsersAdressesBase(**address_dict)
 
-@router.put("/user/{user_id}/address")
-def update_user_address(user_id: int, address: UsersAdressesBase, db: Session = Depends(get_db)):
-    user_address = db.query(models.Users_adresses).filter(models.Users_adresses.Id_Users_adresses == user_id).first()
-    if user_address is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    user_address.adresse = address.adresse
-    user_address.modification = datetime.now()
-    db.commit()
-    return user_address
-# get user_adresse ( with id)
-# post user adresse (with id)
-# put user adresse ( with id)
+
+@router.put("/users/{user_id}/addresses/{address_id}", response_model=UsersAdressesBase)
+def update_user_address(address_id: int, address: UsersAdressesBase, db: Session = Depends(get_db)) -> UsersAdressesBase:
+    updated_address = UsersAdressesRepository.update_user_address(db, address_id, address)
+    address_dict = model_to_dict(updated_address)
+    return UsersAdressesBase(**address_dict)

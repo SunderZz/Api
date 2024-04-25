@@ -6,7 +6,7 @@ class Users_adresses(Base):
 
     Id_Users_adresses = Column(Integer, primary_key=True, autoincrement=True, index=True)
     Adresse = Column(String(50), nullable=False)
-    Phone = Column(Integer, nullable=False)
+    Phone = Column(String(15), nullable=False)
     Creation = Column(TIMESTAMP, nullable=False)
     Modification = Column(TIMESTAMP)
     Latitude = Column(DECIMAL(15, 2), nullable=False)

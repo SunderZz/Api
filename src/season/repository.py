@@ -1,6 +1,23 @@
 from sqlalchemy.orm import Session
-from users_adresses.models import Users_adresses
+from .models import Season
 
-def get_adress(db: Session, user_id: int, new_email: str)-> Users_adresses | None :
-    db.execute("CALL update_user_email(:user_id, :new_email)", {"user_id": user_id, "new_email": new_email})
-    db.commit()
+class SeasonRepository:
+    async def get_seasons(self, db: Session)->Season:
+            return db.query(Season).first()
+    
+    async def create_season(self, db: Session, season: Season)->Season:
+        db_season = Season(**season.dict())
+        db.add(db_season)
+        db.commit()
+        db.refresh(db_season)
+        return db_season
+
+    async def update_season(self, db: Session, season_id: int, season_data: Season)->Season:
+        db_season = db.query(Season).filter(Season.Id_Season == season_id).first()
+        if db_season is None:
+            return None
+        for key, value in season_data.__dict__.items():
+            if hasattr(db_season, key) and value is not None:
+                setattr(db_season, key, value)
+        db.commit()
+        return db_season

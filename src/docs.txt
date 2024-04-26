@@ -52,3 +52,4 @@ PROBLEME:
 
 Endpoint Post de UserAdresse
 Endpoint TVA: peut etre un float
+Endpoint season : get on product

@@ -11,7 +11,7 @@ class UnitRepository:
                 return None
             return getattr(unit, query, None)
     
-    async def create_unit(self, db: Session, unit)->Unit:
+    async def create_unit(self, db: Session, unit: Unit)->Unit:
         db_unit = Unit(**unit.dict())
         db.add(db_unit)
         db.commit()

@@ -1,9 +1,8 @@
-from sqlalchemy import  Column, Integer, String
+from sqlalchemy import Column, Integer, String
 from database import Base
  
-class Tva(Base):
-    __tablename__ = 'tva'
+class Season(Base):
+    __tablename__ = 'season'
 
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    name = Column(String(50), nullable=False)
-    rate = Column(Integer, nullable=False)
+    Id_Season = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    Name = Column(String(50), nullable=False)

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI, Depends
 from typing import Annotated
-from database import engine, AsyncSessionLocal
+from database import AsyncSessionLocal
 from sqlalchemy.orm import Session
 from starlette.types import ASGIApp
 

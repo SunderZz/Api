@@ -19,7 +19,7 @@ from payement.router import router as payement_router
 from preference_ship.router import router as preference_ship_router
 from producers.router import router as producers_router
 from products.router import router as products_router
-from produit_image_1.router import router as image_router
+from produit_image_1.router import router as produit_image_router
 from recipes.router import router as recipes_router
 from season.router import router as season_router
 from shipment_cost.router import router as shipment_cost_router
@@ -59,13 +59,13 @@ app.include_router(casual_5_router)
 app.include_router(city_router)
 app.include_router(code_postal_router)
 app.include_router(customers_router)
-app.include_router(image_router)
 app.include_router(notice_router)
 app.include_router(orders_router)
 app.include_router(payement_router)
 app.include_router(preference_ship_router)
 app.include_router(producers_router)
 app.include_router(products_router)
+app.include_router(produit_image_router)
 app.include_router(recipes_router)
 app.include_router(season_router)
 app.include_router(shipment_cost_router)
@@ -74,6 +74,3 @@ app.include_router(unit_router)
 app.include_router(users_router)
 app.include_router(users_adresses_router)
 app.include_router(base_router)
-
-
-

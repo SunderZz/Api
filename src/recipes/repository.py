@@ -5,11 +5,8 @@ class RecipesRepository:
     async def get_Recipes(self, db: Session)->Recipes:
         return db.query(Recipes).all()
     
-    async def get_Recipes_query(self, db: Session, query: str)->Recipes:
-            recipes = db.query(recipes).first()
-            if recipes is None:
-                return None
-            return getattr(recipes, query, None)
+    async def get_Recipes_query(self,db: Session, recipes: int)->Recipes:
+        return db.query(Recipes).filter(Recipes.Id_Recipes == recipes).first()
     
     async def create_Recipes(self, db: Session, recipes: Recipes)->Recipes:
         db_recipes = Recipes(**recipes.dict())

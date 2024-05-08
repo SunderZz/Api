@@ -9,7 +9,6 @@ from fastapi.middleware.gzip import GZipMiddleware
 from admin.router import router as admin_router
 from adresse_types.router import router as adresse_types_router
 from Base.router import router as base_router
-from casual_5.router import router as casual_5_router
 from city.router import router as city_router
 from code_postal.router import router as code_postal_router
 from customers.router import router as customers_router
@@ -55,7 +54,6 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.include_router(admin_router)
 app.include_router(adresse_types_router)
-app.include_router(casual_5_router)
 app.include_router(city_router)
 app.include_router(code_postal_router)
 app.include_router(customers_router)

@@ -51,7 +51,3 @@ async def update_producer(producer_id: int, producer: ProducersBase,producer_rep
         raise HTTPException(status_code=404, detail="produit_image not found")
     produit_image_dict = model_to_dict(updated_producer) 
     return ProducersBase(**produit_image_dict)
-
-#get producers
-#post producers
-#put producers

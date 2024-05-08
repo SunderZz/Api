@@ -9,4 +9,4 @@ class Orders(Base):
     Status = Column(Boolean, nullable=False)
     Preference_Ship = Column(String(50), nullable=False)
     Ship_Date = Column(TIMESTAMP)
-    Id_Casual = Column(Integer, ForeignKey('Customers.Id_Casual'), nullable=False)
+    Id_Casual = Column(Integer, ForeignKey('customers.Id_Casual'), nullable=False)

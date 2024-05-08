@@ -53,3 +53,6 @@ PROBLEME:
 Endpoint Post de UserAdresse
 Endpoint TVA: peut etre un float
 Endpoint season : get on product
+Endpoint produit image : lié l'image a la personne/ produit
+#get products from producers
+#get preference_ship based on id order

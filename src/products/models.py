@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String, DECIMAL, TIMESTAMP, ForeignKey
 from database import Base
- 
+from sqlalchemy.orm import relationship
+
 class Product(Base):
     __tablename__ = 'product'
 
@@ -12,4 +13,5 @@ class Product(Base):
     Date_activation = Column(TIMESTAMP)
     Date_stop = Column(TIMESTAMP)
     Discount = Column(DECIMAL(5, 2))
-    Id_tva = Column(Integer, ForeignKey('Tva.Id_Tva'), nullable=False)
+    Id_tva = Column(Integer, ForeignKey('tva.Id_Tva'), nullable=False)
+    tva = relationship("Tva", back_populates="products")

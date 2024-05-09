@@ -14,12 +14,14 @@ from code_postal.router import router as code_postal_router
 from customers.router import router as customers_router
 from notice.router import router as notice_router
 from orders.router import router as orders_router
+from pay.router import router as pay_router
 from payement.router import router as payement_router
 from preference_ship.router import router as preference_ship_router
 from producers.router import router as producers_router
 from products.router import router as products_router
 from produit_image_1.router import router as produit_image_router
 from recipes.router import router as recipes_router
+from redac.router import router as redact_router
 from season.router import router as season_router
 from shipment_cost.router import router as shipment_cost_router
 from tva.router import router as tva_router
@@ -59,12 +61,14 @@ app.include_router(code_postal_router)
 app.include_router(customers_router)
 app.include_router(notice_router)
 app.include_router(orders_router)
+app.include_router(pay_router)
 app.include_router(payement_router)
 app.include_router(preference_ship_router)
 app.include_router(producers_router)
 app.include_router(products_router)
 app.include_router(produit_image_router)
 app.include_router(recipes_router)
+app.include_router(redact_router)
 app.include_router(season_router)
 app.include_router(shipment_cost_router)
 app.include_router(tva_router)

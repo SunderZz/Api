@@ -52,3 +52,8 @@ async def update_admin(admin_id: int, admin: AdminBase,admin_repository: AdminRe
         raise HTTPException(status_code=404, detail="admin not found")
     admin_dict = model_to_dict(updated_admin) 
     return AdminBase(**admin_dict)
+
+@router.put("/users/{user_id}/active", status_code=status.HTTP_200_OK)
+async def update_user_active_status(user_id: int, active: bool, repository: AdminRepository = Depends(AdminRepository), db: Session = Depends(get_db)):
+    user = await repository.update_user_active_status(db, user_id, active)
+    return {"message": f"Le statut actif de l'utilisateur {user_id} a été mis à jour avec succès.", "active": user.active}

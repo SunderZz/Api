@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+
+from users.models import Users
 from .models import Admin
 
 class AdminRepository:
@@ -25,3 +27,10 @@ class AdminRepository:
                 setattr(db_admin, key, value)
         db.commit()
         return db_admin
+    
+    async def update_user_active_status(self, db: Session, user_id: int, active: bool):
+        user = db.query(Users).filter(Users.Id_Users == user_id).first()
+        user.active = active
+        db.commit()
+        db.refresh(user)
+        return user

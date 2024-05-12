@@ -1,4 +1,5 @@
 from pydantic import BaseModel
 
-class SeasonBase(BaseModel):
-    Name: str
+class LocatedBase(BaseModel):
+    Id_Users_adresses: int
+    Id_Code_Postal: int

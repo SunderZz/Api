@@ -1,5 +1,6 @@
 from sqlalchemy import DECIMAL, Column, Integer, String, TIMESTAMP
 from database import Base
+from sqlalchemy.orm import relationship
  
 class Users_adresses(Base):
     __tablename__ = 'Users_adresses'
@@ -11,3 +12,4 @@ class Users_adresses(Base):
     Modification = Column(TIMESTAMP)
     Latitude = Column(DECIMAL(15, 2), nullable=False)
     Longitude = Column(DECIMAL(15, 2), nullable=False)
+    locate = relationship("Located", back_populates="users_adresses")

@@ -1,23 +1,25 @@
 from sqlalchemy.orm import Session
-from .models import Season
+from .models import CarryOn
 
-class SeasonRepository:
-    async def get_seasons(self, db: Session)->Season:
-            return db.query(Season).first()
-    
-    async def create_season(self, db: Session, season: Season)->Season:
-        db_season = Season(**season.dict())
-        db.add(db_season)
-        db.commit()
-        db.refresh(db_season)
-        return db_season
+class CarryOnRepository:
 
-    async def update_season(self, db: Session, season_id: int, season_data: Season)->Season:
-        db_season = db.query(Season).filter(Season.Id_Season == season_id).first()
-        if db_season is None:
-            return None
-        for key, value in season_data.__dict__.items():
-            if hasattr(db_season, key) and value is not None:
-                setattr(db_season, key, value)
+    async def create_carry_on(self,db: Session, carry_on: CarryOn)->CarryOn:
+        db_given = CarryOn(**carry_on.dict())
+        db.add(db_given)
         db.commit()
-        return db_season
+        db.refresh(db_given)
+        return db_given
+
+    async def get_carry_on(self,db: Session)->CarryOn:
+        return db.query(CarryOn).all()
+
+    async def get_carry_on_by_id(self,db: Session, id: int)->CarryOn:
+        return db.query(CarryOn).filter(CarryOn.Id_Producers == id).first()
+
+    async def update_carry_on(self,db: Session, id: int, carry_on: CarryOn)->CarryOn:
+        db_given = db.query(CarryOn).filter(CarryOn.Id_Producers == id).first()
+        for key, value in carry_on.dict().items():
+            setattr(db_given, key, value)
+        db.commit()
+        db.refresh(db_given)
+        return db_given

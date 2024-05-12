@@ -1,4 +1,7 @@
+from datetime import date
 from pydantic import BaseModel
 
-class SeasonBase(BaseModel):
-    Name: str
+class CarryOnBase(BaseModel):
+    Id_Producers: int
+    Id_Admin: int
+    date_carry: date

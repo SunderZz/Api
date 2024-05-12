@@ -10,3 +10,4 @@ class Customers(Base):
     pays = relationship("Pay", back_populates="customer")
     operates = relationship("Operate", back_populates="customer")
     give_1 = relationship("Give_1", back_populates="customer")
+    choose = relationship("Choose", back_populates="customer")

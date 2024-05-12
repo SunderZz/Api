@@ -21,3 +21,4 @@ class Product(Base):
     given = relationship("Given", back_populates="product")
     give = relationship("Give", back_populates="product")
     found = relationship("Found", back_populates="product")
+    choose = relationship("Choose", back_populates="product")

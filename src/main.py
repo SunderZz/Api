@@ -10,6 +10,8 @@ from admin.router import router as admin_router
 from adresse_types.router import router as adresse_types_router
 from Base.router import router as base_router
 from city.router import router as city_router
+from carry_on.router import router as carry_on_router
+from choose.router import router as choose_router
 from code_postal.router import router as code_postal_router
 from customers.router import router as customers_router
 from found.router import router as found_router
@@ -67,6 +69,8 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(admin_router)
 app.include_router(adresse_types_router)
 app.include_router(city_router)
+app.include_router(carry_on_router)
+app.include_router(choose_router)
 app.include_router(code_postal_router)
 app.include_router(customers_router)
 app.include_router(found_router)

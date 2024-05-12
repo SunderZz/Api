@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, String
 from database import Base
 from sqlalchemy.orm import relationship
 
@@ -10,3 +10,4 @@ class Producers(Base):
     description = Column(String(50))
     Id_Users = Column(Integer, ForeignKey('users.Id_Users'), nullable=False)
     give = relationship("Give", back_populates="producers")
+    carry = relationship("CarryOn", back_populates="producers")

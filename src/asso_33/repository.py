@@ -1,23 +1,25 @@
 from sqlalchemy.orm import Session
-from .models import Season
+from .models import Asso_33
 
-class SeasonRepository:
-    async def get_seasons(self, db: Session)->Season:
-            return db.query(Season).first()
-    
-    async def create_season(self, db: Session, season: Season)->Season:
-        db_season = Season(**season.dict())
-        db.add(db_season)
-        db.commit()
-        db.refresh(db_season)
-        return db_season
+class Asso_33Repository:
 
-    async def update_season(self, db: Session, season_id: int, season_data: Season)->Season:
-        db_season = db.query(Season).filter(Season.Id_Season == season_id).first()
-        if db_season is None:
-            return None
-        for key, value in season_data.__dict__.items():
-            if hasattr(db_season, key) and value is not None:
-                setattr(db_season, key, value)
+    async def create_asso_33(self,db: Session, asso: Asso_33)->Asso_33:
+        db_given = Asso_33(**asso.dict())
+        db.add(db_given)
         db.commit()
-        return db_season
+        db.refresh(db_given)
+        return db_given
+
+    async def get_asso_33(self,db: Session)->Asso_33:
+        return db.query(Asso_33).all()
+
+    async def get_asso_33_by_id(self,db: Session, id: int)->Asso_33:
+        return db.query(Asso_33).filter(Asso_33.Id_Users_adresses == id).first()
+
+    async def update_asso_33(self,db: Session, id: int, asso: Asso_33)->Asso_33:
+        db_given = db.query(Asso_33).filter(Asso_33.Id_Users_adresses == id).first()
+        for key, value in asso.dict().items():
+            setattr(db_given, key, value)
+        db.commit()
+        db.refresh(db_given)
+        return db_given

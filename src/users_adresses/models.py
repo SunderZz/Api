@@ -13,3 +13,4 @@ class Users_adresses(Base):
     Latitude = Column(DECIMAL(15, 2), nullable=False)
     Longitude = Column(DECIMAL(15, 2), nullable=False)
     locate = relationship("Located", back_populates="users_adresses")
+    asso_33 = relationship("Asso_33", back_populates="users_adresses")

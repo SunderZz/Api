@@ -1,23 +1,25 @@
 from sqlalchemy.orm import Session
-from .models import Season
+from .models import Got
 
-class SeasonRepository:
-    async def get_seasons(self, db: Session)->Season:
-            return db.query(Season).first()
-    
-    async def create_season(self, db: Session, season: Season)->Season:
-        db_season = Season(**season.dict())
-        db.add(db_season)
-        db.commit()
-        db.refresh(db_season)
-        return db_season
+class GotRepository:
 
-    async def update_season(self, db: Session, season_id: int, season_data: Season)->Season:
-        db_season = db.query(Season).filter(Season.Id_Season == season_id).first()
-        if db_season is None:
-            return None
-        for key, value in season_data.__dict__.items():
-            if hasattr(db_season, key) and value is not None:
-                setattr(db_season, key, value)
+    async def create_got(self,db: Session, got: Got)->Got:
+        db_Got = Got(**got.dict())
+        db.add(db_Got)
         db.commit()
-        return db_season
+        db.refresh(db_Got)
+        return db_Got
+
+    async def get_got(self,db: Session)->Got:
+        return db.query(Got).all()
+
+    async def get_got_by_id(self,db: Session, id: int)->Got:
+        return db.query(Got).filter(Got.Id_City == id).first()
+
+    async def update_got(self,db: Session, id: int, got: Got)->Got:
+        db_Got = db.query(Got).filter(Got.Id_City == id).first()
+        for key, value in got.dict().items():
+            setattr(db_Got, key, value)
+        db.commit()
+        db.refresh(db_Got)
+        return db_Got

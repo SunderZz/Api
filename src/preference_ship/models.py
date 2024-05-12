@@ -8,4 +8,5 @@ class Preferenceship(Base):
 
     Id_Preferenceship = Column(Integer, primary_key=True, autoincrement=True, index=True)
     asso_33 = relationship("Asso_33", back_populates="preferenceship")
+    asso_34 = relationship("Asso_34", back_populates="preferenceship")
 

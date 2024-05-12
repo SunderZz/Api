@@ -1,4 +1,11 @@
 from pydantic import BaseModel
+from datetime import date
 
-class SeasonBase(BaseModel):
-    Name: str
+class GiveBase(BaseModel):
+    Id_Producers: int
+    Id_Unit: int
+    Id_Product: int
+    Quantity: int
+    Given_Date: date
+
+

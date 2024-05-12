@@ -19,3 +19,5 @@ class Product(Base):
     lines = relationship("Linede", back_populates="product")
     is_on = relationship("Is_On", back_populates="product")
     given = relationship("Given", back_populates="product")
+    give = relationship("Give", back_populates="product")
+    found = relationship("Found", back_populates="product")

@@ -1,4 +1,6 @@
 from pydantic import BaseModel
 
-class SeasonBase(BaseModel):
-    Name: str
+class FoundBase(BaseModel):
+    Id_Product: int
+    Id_Recipes: int
+

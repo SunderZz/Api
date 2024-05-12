@@ -1,6 +1,7 @@
 from sqlalchemy import DECIMAL, Column, Integer
 from database import Base
- 
+from sqlalchemy.orm import relationship
+
 class Unit(Base):
     __tablename__ = 'unit'
 
@@ -9,3 +10,4 @@ class Unit(Base):
     Litre = Column(Integer)
     Unit = Column(Integer)
     Gramme = Column(Integer)
+    give = relationship("Give", back_populates="unit")

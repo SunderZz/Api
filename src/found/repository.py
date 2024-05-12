@@ -1,23 +1,25 @@
 from sqlalchemy.orm import Session
-from .models import Season
+from .models import Found
 
-class SeasonRepository:
-    async def get_seasons(self, db: Session)->Season:
-            return db.query(Season).first()
-    
-    async def create_season(self, db: Session, season: Season)->Season:
-        db_season = Season(**season.dict())
-        db.add(db_season)
-        db.commit()
-        db.refresh(db_season)
-        return db_season
+class FoundRepository:
 
-    async def update_season(self, db: Session, season_id: int, season_data: Season)->Season:
-        db_season = db.query(Season).filter(Season.Id_Season == season_id).first()
-        if db_season is None:
-            return None
-        for key, value in season_data.__dict__.items():
-            if hasattr(db_season, key) and value is not None:
-                setattr(db_season, key, value)
+    async def create_found(self,db: Session, found: Found)->Found:
+        db_given = Found(**found.dict())
+        db.add(db_given)
         db.commit()
-        return db_season
+        db.refresh(db_given)
+        return db_given
+
+    async def get_found(self,db: Session)->Found:
+        return db.query(Found).all()
+
+    async def get_found_by_id(self,db: Session, id: int)->Found:
+        return db.query(Found).filter(Found.Id_Product == id).first()
+
+    async def update_found(self,db: Session, id: int, found: Found)->Found:
+        db_given = db.query(Found).filter(Found.Id_Product == id).first()
+        for key, value in found.dict().items():
+            setattr(db_given, key, value)
+        db.commit()
+        db.refresh(db_given)
+        return db_given

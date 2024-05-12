@@ -1,6 +1,7 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from database import Base
- 
+from sqlalchemy.orm import relationship
+
 class Producers(Base):
     __tablename__ = 'producers'
 
@@ -8,3 +9,4 @@ class Producers(Base):
     Document = Column(String(50), nullable=False)
     description = Column(String(50))
     Id_Users = Column(Integer, ForeignKey('users.Id_Users'), nullable=False)
+    give = relationship("Give", back_populates="producers")

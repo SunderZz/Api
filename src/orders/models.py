@@ -12,4 +12,4 @@ class Orders(Base):
     Ship_Date = Column(TIMESTAMP)
     Id_Casual = Column(Integer, ForeignKey('customers.Id_Casual'), nullable=False)
     lines = relationship("Linede", back_populates="orders")
-    asso_34 = relationship("Asso_34", back_populates="asso_34")
+    asso_34 = relationship("Asso_34", back_populates="orders")

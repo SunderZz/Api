@@ -9,3 +9,4 @@ class Customers(Base):
     Id_Users = Column(Integer, ForeignKey('users.Id_Users'), nullable=False)
     pays = relationship("Pay", back_populates="customer")
     operates = relationship("Operate", back_populates="customer")
+    give_1 = relationship("Give_1", back_populates="customer")

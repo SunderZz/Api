@@ -12,6 +12,8 @@ from Base.router import router as base_router
 from city.router import router as city_router
 from code_postal.router import router as code_postal_router
 from customers.router import router as customers_router
+from give_1.router import router as give_1_router
+from given.router import router as given_router
 from got_3.router import router as got_router
 from is_on.router import router as ison_router
 from linede.router import router as linede_router
@@ -65,6 +67,8 @@ app.include_router(adresse_types_router)
 app.include_router(city_router)
 app.include_router(code_postal_router)
 app.include_router(customers_router)
+app.include_router(give_1_router)
+app.include_router(given_router)
 app.include_router(got_router)
 app.include_router(ison_router)
 app.include_router(linede_router)

@@ -1,8 +1,14 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, ForeignKey, PrimaryKeyConstraint, String
+from sqlalchemy.orm import relationship
 from database import Base
- 
-class Season(Base):
-    __tablename__ = 'season'
 
-    Id_Season = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    Name = Column(String(50), nullable=False)
+class Given(Base):
+    __tablename__ = 'Given'
+    __table_args__ = (
+        PrimaryKeyConstraint('Id_Notice', 'Id_Product'),
+    )
+
+    Id_Notice = Column(Integer, ForeignKey('notice.Id_Notice'), nullable=False)
+    Id_Product = Column(Integer, ForeignKey('product.Id_Product'), nullable=False)
+    notice = relationship("Notice", back_populates="given")
+    product = relationship("Product", back_populates="given")

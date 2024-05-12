@@ -18,3 +18,4 @@ class Product(Base):
     manages = relationship("Manage", back_populates="product")
     lines = relationship("Linede", back_populates="product")
     is_on = relationship("Is_On", back_populates="product")
+    given = relationship("Given", back_populates="product")

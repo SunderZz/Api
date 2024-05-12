@@ -1,11 +1,11 @@
-import season.models as models
+import operate.models as models
 import main as get_db
 from typing import Annotated
-from .schema import SeasonBase
+from .schema import OperateBase
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal
-from .repository import SeasonRepository
+from .repository import OperateRepository
 from common import model_to_dict
 
 def get_db():
@@ -15,29 +15,35 @@ def get_db():
     finally:
         db.close_all()
 
-router = APIRouter(tags=["season"])
+router = APIRouter(tags=["operate"])
 
 models.Base.metadata.create_all(bind=engine)
 
 db_dependency= Annotated[Session, Depends(get_db)]
 
-@router.get("/season/", status_code=status.HTTP_200_OK, response_model=SeasonBase)
-async def get_seasons(season_repository: SeasonRepository = Depends(SeasonRepository),db: Session = Depends(get_db))-> SeasonBase:
-    seasons = await season_repository.get_seasons(db)
-    season_dict = model_to_dict(seasons) 
-    return SeasonBase(**season_dict)
+@router.get("/operate/", status_code=status.HTTP_200_OK, response_model=list[OperateBase])
+async def get_operates(operate_repository: OperateRepository = Depends(OperateRepository), db: Session = Depends(get_db)) -> list[OperateBase]:
+    operates = await operate_repository.get_operate(db)
+    operates_list = [model_to_dict(operate) for operate in operates]
+    return [OperateBase(**operate_dict) for operate_dict in operates_list]
 
+@router.get("/operate/{operate_id}", status_code=status.HTTP_200_OK, response_model=OperateBase)
+async def get_operate_by_id(operate_id: int, operate_repository: OperateRepository = Depends(OperateRepository), db: Session = Depends(get_db)) -> OperateBase:
+    operate = await operate_repository.get_operate_by_id(db, operate_id)
+    if operate is None:
+        raise HTTPException(status_code=404, detail="operate not found")
+    return OperateBase(**model_to_dict(operate))
 
-@router.post("/season/", status_code=status.HTTP_201_CREATED, response_model=SeasonBase)
-async def create_season(season: SeasonBase,season_repository: SeasonRepository = Depends(SeasonRepository), db: Session = Depends(get_db))-> SeasonBase:
-    new_season = await season_repository.create_season(db, season)
-    season_dict = model_to_dict(new_season) 
-    return SeasonBase(**season_dict)
+@router.post("/operate/", status_code=status.HTTP_201_CREATED, response_model=OperateBase)
+async def create_operate(operate: OperateBase, operate_repository: OperateRepository = Depends(OperateRepository), db: Session = Depends(get_db)) -> OperateBase:
+    new_operate = await operate_repository.create_operate(db, operate)
+    operate_dict = model_to_dict(new_operate)
+    return OperateBase(**operate_dict)
 
-@router.put("/season/{season_id}", status_code=status.HTTP_200_OK, response_model=SeasonBase)
-async def update_season(season_id: int, season: SeasonBase,season_repository: SeasonRepository = Depends(SeasonRepository), db: Session = Depends(get_db))-> SeasonBase:
-    updated_season = await season_repository.update_season(db, season_id, season)
-    if updated_season is None:
-        raise HTTPException(status_code=404, detail="season not found")
-    season_dict = model_to_dict(updated_season) 
-    return SeasonBase(**season_dict)
+@router.put("/operate/{operate_id}", status_code=status.HTTP_200_OK, response_model=OperateBase)
+async def update_operate(operate_id: int, operate: OperateBase, operate_repository: OperateRepository = Depends(OperateRepository), db: Session = Depends(get_db)) -> OperateBase:
+    updated_operate = await operate_repository.update_operate(db, operate_id, operate)
+    if updated_operate is None:
+        raise HTTPException(status_code=404, detail="operate not found")
+    operate_dict = model_to_dict(updated_operate)
+    return OperateBase(**operate_dict)

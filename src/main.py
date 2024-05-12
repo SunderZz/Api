@@ -12,7 +12,9 @@ from Base.router import router as base_router
 from city.router import router as city_router
 from code_postal.router import router as code_postal_router
 from customers.router import router as customers_router
+from manage.router import router as manage_router
 from notice.router import router as notice_router
+from operate.router import router as operate_router
 from orders.router import router as orders_router
 from pay.router import router as pay_router
 from payement.router import router as payement_router
@@ -59,7 +61,9 @@ app.include_router(adresse_types_router)
 app.include_router(city_router)
 app.include_router(code_postal_router)
 app.include_router(customers_router)
+app.include_router(manage_router)
 app.include_router(notice_router)
+app.include_router(operate_router)
 app.include_router(orders_router)
 app.include_router(pay_router)
 app.include_router(payement_router)

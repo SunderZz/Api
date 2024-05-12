@@ -15,3 +15,4 @@ class Product(Base):
     Discount = Column(DECIMAL(5, 2))
     Id_tva = Column(Integer, ForeignKey('tva.Id_Tva'), nullable=False)
     tva = relationship("Tva", back_populates="products")
+    manages = relationship("Manage", back_populates="product")

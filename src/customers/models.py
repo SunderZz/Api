@@ -8,3 +8,4 @@ class Customers(Base):
     Id_Casual = Column(Integer, primary_key=True, autoincrement=True, index=True)
     Id_Users = Column(Integer, ForeignKey('users.Id_Users'), nullable=False)
     pays = relationship("Pay", back_populates="customer")
+    operates = relationship("Operate", back_populates="customer")

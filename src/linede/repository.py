@@ -1,23 +1,25 @@
 from sqlalchemy.orm import Session
-from .models import Season
+from .models import Linede
 
-class SeasonRepository:
-    async def get_seasons(self, db: Session)->Season:
-            return db.query(Season).first()
-    
-    async def create_season(self, db: Session, season: Season)->Season:
-        db_season = Season(**season.dict())
-        db.add(db_season)
-        db.commit()
-        db.refresh(db_season)
-        return db_season
+class LinedeRepository:
 
-    async def update_season(self, db: Session, season_id: int, season_data: Season)->Season:
-        db_season = db.query(Season).filter(Season.Id_Season == season_id).first()
-        if db_season is None:
-            return None
-        for key, value in season_data.__dict__.items():
-            if hasattr(db_season, key) and value is not None:
-                setattr(db_season, key, value)
+    async def create_linede(self,db: Session, linede: Linede)->Linede:
+        db_linede = Linede(**linede.dict())
+        db.add(db_linede)
         db.commit()
-        return db_season
+        db.refresh(db_linede)
+        return db_linede
+
+    async def get_linede(self,db: Session)->Linede:
+        return db.query(Linede).all()
+
+    async def get_linede_by_id(self,db: Session, id: int)->Linede:
+        return db.query(Linede).filter(Linede.Id_Orders == id).first()
+
+    async def update_linede(self,db: Session, id: int, linede: Linede)->Linede:
+        db_linede = db.query(Linede).filter(Linede.Id_Orders == id).first()
+        for key, value in linede.dict().items():
+            setattr(db_linede, key, value)
+        db.commit()
+        db.refresh(db_linede)
+        return db_linede

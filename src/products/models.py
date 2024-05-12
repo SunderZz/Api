@@ -16,3 +16,5 @@ class Product(Base):
     Id_tva = Column(Integer, ForeignKey('tva.Id_Tva'), nullable=False)
     tva = relationship("Tva", back_populates="products")
     manages = relationship("Manage", back_populates="product")
+    lines = relationship("Linede", back_populates="product")
+    is_on = relationship("Is_On", back_populates="product")

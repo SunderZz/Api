@@ -1,8 +1,15 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, ForeignKey, PrimaryKeyConstraint, String
+from sqlalchemy.orm import relationship
 from database import Base
- 
-class Season(Base):
-    __tablename__ = 'season'
 
-    Id_Season = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    Name = Column(String(50), nullable=False)
+class Linede(Base):
+    __tablename__ = 'linede'
+    __table_args__ = (
+        PrimaryKeyConstraint('Id_Orders', 'Id_Product'),
+    )
+
+    Id_Orders = Column(Integer, ForeignKey('orders.Id_Orders'), nullable=False)
+    Id_Product = Column(Integer, ForeignKey('product.Id_Product'), nullable=False)
+    qte = Column(String(50), nullable=False)
+    orders = relationship("Orders", back_populates="lines")
+    product = relationship("Product", back_populates="lines")

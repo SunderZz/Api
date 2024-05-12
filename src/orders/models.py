@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, TIMESTAMP
 from database import Base
- 
+from sqlalchemy.orm import relationship
+
 class Orders(Base):
     __tablename__ = 'orders'
 
@@ -10,3 +11,4 @@ class Orders(Base):
     Preference_Ship = Column(String(50), nullable=False)
     Ship_Date = Column(TIMESTAMP)
     Id_Casual = Column(Integer, ForeignKey('customers.Id_Casual'), nullable=False)
+    lines = relationship("Linede", back_populates="orders")

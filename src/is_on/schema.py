@@ -1,4 +1,6 @@
 from pydantic import BaseModel
 
-class SeasonBase(BaseModel):
-    Name: str
+class IsOnBase(BaseModel):
+    Id_Season: int
+    Id_Product: int
+

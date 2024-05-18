@@ -28,7 +28,7 @@ class AdminRepository:
         db.commit()
         return db_admin
     
-    async def update_user_active_status(self, db: Session, user_id: int, active: bool):
+    async def update_user_active_status(self, db: Session, user_id: int, active: bool)-> Users:
         user = db.query(Users).filter(Users.Id_Users == user_id).first()
         user.active = active
         db.commit()

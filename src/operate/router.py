@@ -35,7 +35,10 @@ async def get_operate_by_id(operate_id: int, operate_repository: OperateReposito
     return OperateBase(**model_to_dict(operate))
 
 @router.post("/operate/", status_code=status.HTTP_201_CREATED, response_model=OperateBase)
-async def create_operate(operate: OperateBase, operate_repository: OperateRepository = Depends(OperateRepository), db: Session = Depends(get_db)) -> OperateBase:
+async def create_operate(operate: OperateBase,operate_id:int, operate_repository: OperateRepository = Depends(OperateRepository), db: Session = Depends(get_db)) -> OperateBase:
+    existing_operate  = await operate_repository.get_operate_by_id(db, operate_id)
+    if existing_operate:
+        return existing_operate
     new_operate = await operate_repository.create_operate(db, operate)
     operate_dict = model_to_dict(new_operate)
     return OperateBase(**operate_dict)

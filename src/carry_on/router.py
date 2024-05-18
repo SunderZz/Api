@@ -35,7 +35,10 @@ async def get_carry_onose_by_id(carry_on_id: int, carry_on_repository: CarryOnRe
     return CarryOnBase(**model_to_dict(carry_on))
 
 @router.post("/carry_on/", status_code=status.HTTP_201_CREATED, response_model=CarryOnBase)
-async def create_carry_on(carry_on: CarryOnBase, carry_on_repository: CarryOnRepository = Depends(CarryOnRepository), db: Session = Depends(get_db)) -> CarryOnBase:
+async def create_carry_on(carry_on: CarryOnBase,carry_on_id:int, carry_on_repository: CarryOnRepository = Depends(CarryOnRepository), db: Session = Depends(get_db)) -> CarryOnBase:
+    existing_carry_on  = await carry_on_repository.get_carry_on_by_id(db, carry_on_id)
+    if existing_carry_on:
+        return existing_carry_on
     new_carry_on = await carry_on_repository.create_carry_on(db, carry_on)
     carry_on_dict = model_to_dict(new_carry_on)
     return CarryOnBase(**carry_on_dict)

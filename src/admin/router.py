@@ -7,6 +7,14 @@ import main as get_db
 from database import engine, SessionLocal
 from common import model_to_dict
 from .repository import AdminRepository
+from users.schema import UserBase
+from operate.router import create_operate,update_operate
+from operate.schema import OperateBase
+from operate.repository import OperateRepository
+from carry_on.router import create_carry_on,update_carry_on
+from carry_on.schema import CarryOnBase
+from carry_on.repository import CarryOnRepository
+
 
 def get_db():
     db = SessionLocal()
@@ -53,7 +61,26 @@ async def update_admin(admin_id: int, admin: AdminBase,admin_repository: AdminRe
     admin_dict = model_to_dict(updated_admin) 
     return AdminBase(**admin_dict)
 
-@router.put("/users/{user_id}/active", status_code=status.HTTP_200_OK)
-async def update_user_active_status(user_id: int, active: bool, repository: AdminRepository = Depends(AdminRepository), db: Session = Depends(get_db)):
-    user = await repository.update_user_active_status(db, user_id, active)
-    return {"message": f"Le statut actif de l'utilisateur {user_id} a été mis à jour avec succès.", "active": user.active}
+@router.put("/users/{casual_id}/active", status_code=status.HTTP_200_OK)
+async def update_casual_active_status(casual_id: int,admin_id: int, active: bool, repository: AdminRepository = Depends(AdminRepository),operate_repository: OperateRepository = Depends(OperateRepository), db: Session = Depends(get_db))->UserBase:
+    user = await repository.update_user_active_status(db, casual_id, active)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    new_operate = await create_operate(OperateBase(Id_Admin=admin_id, Id_Casual=casual_id),admin_id,operate_repository, db)
+    if not new_operate:
+        await update_operate(admin_id, OperateBase(Id_Admin=admin_id, Id_Casual=casual_id), operate_repository, db)
+
+    user_dict = model_to_dict(user) 
+    return UserBase(**user_dict)
+
+@router.put("/users/{producers_id}/active", status_code=status.HTTP_200_OK)
+async def update_producer_active_status(producers_id: int,admin_id: int, active: bool, repository: AdminRepository = Depends(AdminRepository),carry_on_repository: CarryOnRepository = Depends(CarryOnRepository), db: Session = Depends(get_db))->UserBase:
+    user = await repository.update_user_active_status(db, producers_id, active)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    new_operate = await create_carry_on(CarryOnBase(Id_Admin=admin_id, Id_Producers=producers_id),carry_on_repository, db)
+    if not new_operate:
+        await update_carry_on(admin_id, CarryOnBase(Id_Admin=admin_id, Id_Producers=producers_id), carry_on_repository, db)
+
+    user_dict = model_to_dict(user) 
+    return UserBase(**user_dict)

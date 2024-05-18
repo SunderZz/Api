@@ -30,9 +30,9 @@ async def get_recipes(recipes_repository: RecipesRepository = Depends(RecipesRep
     return [RecipesBase(**recipes_dict) for recipes_dict in recipes_list]
 
 
-@router.get("/recipes/{query}", response_model=RecipesBase)
-async def get_recipes_value(query: str, recipes_repository: RecipesRepository = Depends(RecipesRepository), db: Session = Depends(get_db)) -> RecipesBase:
-    value = await recipes_repository.get_Recipes_query(db, query)
+@router.get("/recipes/{recipe}", response_model=RecipesBase)
+async def get_recipes_value(recipe: int, recipes_repository: RecipesRepository = Depends(RecipesRepository), db: Session = Depends(get_db)) -> RecipesBase:
+    value = await recipes_repository.get_Recipes_query(db, recipe)
     if value is None:
         raise HTTPException(status_code=404, detail="recipes not found or attribute not found")
     return RecipesBase(value=value)
@@ -47,6 +47,7 @@ async def create_recipes(recipes: RecipesBase,recipes_repository: RecipesReposit
 @router.put("/recipes/{recipes_id}", status_code=status.HTTP_200_OK, response_model=RecipesBase)
 async def update_recipes(recipes_id: int, recipes: RecipesBase,recipes_repository: RecipesRepository = Depends(RecipesRepository), db: Session = Depends(get_db))-> RecipesBase:
     updated_recipes = await recipes_repository.update_Recipes(db, recipes_id, recipes)
+    print(updated_recipes)
     if updated_recipes is None:
         raise HTTPException(status_code=404, detail="recipes not found")
     recipes_dict = model_to_dict(updated_recipes) 

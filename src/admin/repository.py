@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from users.models import Users
+from products.models import Product
 from .models import Admin
 
 class AdminRepository:
@@ -28,9 +29,16 @@ class AdminRepository:
         db.commit()
         return db_admin
     
-    async def update_user_active_status(self, db: Session, user_id: int, active: bool)-> Users:
+    async def modify_user_active_status(self, db: Session, user_id: int, active: bool)-> Users:
         user = db.query(Users).filter(Users.Id_Users == user_id).first()
         user.active = active
         db.commit()
         db.refresh(user)
         return user
+    
+    async def update_product_active_status(self, db: Session, product_id: int, active: bool)-> Product:
+        product = db.query(Product).filter(Product.Id_Product == product_id).first()
+        product.Active = active
+        db.commit()
+        db.refresh(product)
+        return product

@@ -7,9 +7,9 @@ from starlette.types import ASGIApp
 from fastapi.middleware.gzip import GZipMiddleware
 
 from admin.router import router as admin_router
+from adresse_types.router import router as adresse_types_router
 from asso_33.router import router as asso_33_router
 from asso_34.router import router as asso_34_router
-from adresse_types.router import router as adresse_types_router
 from Base.router import router as base_router
 from city.router import router as city_router
 from carry_on.router import router as carry_on_router
@@ -69,9 +69,9 @@ db_dependency= Annotated[Session, Depends(get_db)]
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.include_router(admin_router)
+app.include_router(adresse_types_router)
 app.include_router(asso_33_router)
 app.include_router(asso_34_router)
-app.include_router(adresse_types_router)
 app.include_router(city_router)
 app.include_router(carry_on_router)
 app.include_router(choose_router)

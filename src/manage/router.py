@@ -35,7 +35,10 @@ async def get_manage_by_id(manage_id: int, manage_repository: ManageRepository =
     return ManageBase(**model_to_dict(manage))
 
 @router.post("/manage/", status_code=status.HTTP_201_CREATED, response_model=ManageBase)
-async def create_manage(manage: ManageBase, manage_repository: ManageRepository = Depends(ManageRepository), db: Session = Depends(get_db)) -> ManageBase:
+async def create_manage(manage: ManageBase,manage_id:int, manage_repository: ManageRepository = Depends(ManageRepository), db: Session = Depends(get_db)) -> ManageBase:
+    existing_manage  = await manage_repository.get_manage_by_id(db, manage_id)
+    if existing_manage:
+        return existing_manage
     new_manage = await manage_repository.create_manage(db, manage)
     manage_dict = model_to_dict(new_manage)
     return ManageBase(**manage_dict)

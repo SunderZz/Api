@@ -8,6 +8,14 @@ from database import engine, SessionLocal
 from .repository import UsersRepository
 from common import model_to_dict
 
+from adresse_types.router import create_adresses_types, update_adresse_type, get_adresses_type_user,update_adresse_type
+from adresse_types.schema import AdresseTypeBase
+from adresse_types.repository import AdresseTypesRepository
+from users_adresses.router import create_user_address,update_user_address, get_user_addresses
+from users_adresses.schema import UsersAdressesBase
+from users_adresses.repository import UsersAdressesRepository
+
+
 def get_db():
     db = SessionLocal()
     try: 
@@ -49,3 +57,33 @@ async def update_user(user_id: int,user_data: UserBase, user_repository: UsersRe
         raise HTTPException(status_code=404, detail="User not found")
     user_dict = model_to_dict(user_put)
     return UserBase(**user_dict)
+
+@router.post("/users/addresses/{user_id}", response_model=UsersAdressesBase)
+async def create_new_user_address(user_id:int,adresse:UsersAdressesBase,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
+    db_address = await create_user_address(adresse, user_adresse_repository,db)
+    adresse_type = await get_adresses_type_user(user_id,adresse_type_repository,db)
+    await create_adresses_types(adresse_type,adresse_type_repository,db)
+    return db_address
+
+@router.put("/users/{adresses_id}/addresses", response_model=UsersAdressesBase)
+async def modify_user_address(user_id:int,adresses_id:int,adresse:UsersAdressesBase,adresse_type:AdresseTypeBase,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
+    db_address = await update_user_address(adresses_id,adresse, user_adresse_repository,db)
+    adresse_type = await adresse_type_repository.get_adressestypes_user(db, user_id)
+    await update_adresse_type(adresse_type.Id_Adresse_Type,adresse_type,adresse_type_repository,db)
+    return db_address
+
+@router.get("/users/{user_id}/addresses", response_model=list[UsersAdressesBase])
+async def retrieve_user_address(user_id:int,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> list[UsersAdressesBase]:
+    adresse_type = await get_adresses_type_user(user_id,adresse_type_repository,db)
+    db_address = await get_user_addresses(adresse_type.Id_Users_adresses, user_adresse_repository,db)
+    return db_address
+
+@router.post("/users/{user_id}/addresses", response_model=AdresseTypeBase)
+async def create_address_type_for_user(adresse_type:AdresseTypeBase,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),db: Session = Depends(get_db)) -> AdresseTypeBase:
+    db_address = await create_adresses_types(adresse_type, user_adresse_repository,db)
+    return db_address
+
+@router.put("/users/{adresse_id}/addresses", response_model=list[UsersAdressesBase])
+async def update_user_adresse_type(adresse_id:int,adresse_type:AdresseTypeBase,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> list[UsersAdressesBase]:
+    db_address = await update_adresse_type(adresse_id,adresse_type ,user_adresse_repository,db)
+    return db_address

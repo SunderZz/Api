@@ -6,7 +6,10 @@ class AdresseTypesRepository:
         return db.query(Adresse_Type).all()
     
     async def get_adressestypes_query(self,db: Session, adressestypes: int)->Adresse_Type:
-        return db.query(Adresse_Type).filter(Adresse_Type.Id_Adresse_Type == adressestypes).first()  
+        return db.query(Adresse_Type).filter(Adresse_Type.Id_Adresse_Type == adressestypes).first()
+      
+    async def get_adressestypes_user(self,db: Session, id_user: int)->Adresse_Type:
+        return db.query(Adresse_Type).filter(Adresse_Type.Id_Users == id_user).first()  
 
 
     async def create_adressestypes(self, db: Session, adressestypes: Adresse_Type)->Adresse_Type:

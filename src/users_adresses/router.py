@@ -9,6 +9,13 @@ from database import engine, SessionLocal
 from .repository import UsersAdressesRepository
 from common import model_to_dict
 
+from located.router import create_located,update_located,get_located_by_ids
+from located.schema import LocatedBase
+from located.repository import LocatedRepository
+from code_postal.router import create_code_postal,update_code_postal,get_code_postal_value
+from code_postal.schema import CodePostalBase,CodePostalIdBase
+from code_postal.repository import CodePostalRepository
+
 def get_db():
     db = SessionLocal()
     try: 
@@ -33,14 +40,21 @@ async def get_user_addresses(adresse_id: int,user_adresse_repository: UsersAdres
 
 
 @router.post("/users_adresses/addresses", response_model=UsersAdressesBase)
-async def create_user_address(address: UsersAdressesBase,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
+async def create_user_address(address: UsersAdressesBase,code_postal:CodePostalBase,code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
     db_address = await user_adresse_repository.create_user_address(db, address)
+    code =await create_code_postal(code_postal,code_postal_repository,db)
+    value = await get_code_postal_value(code.code_postal,code_postal_repository,db)
+    await create_located(LocatedBase(Id_Code_Postal=value.Id_Code_Postal,Id_Users_adresses=db_address.Id_Users_adresses),located_repository,db)
     address_dict = model_to_dict(db_address) 
     return UsersAdressesBase(**address_dict)
 
 
 @router.put("/users/{user_id}/addresses/{address_id}", response_model=UsersAdressesBase)
-async def update_user_address(address_id: int, address: UsersAdressesBase,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
+async def update_user_address(address_id: int,postal_code:int,address: UsersAdressesBase,code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),located_repository:LocatedRepository= Depends(LocatedRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
     updated_address = await user_adresse_repository.update_user_address(db, address_id, address)
+    await get_located_by_ids(updated_address.Id_Users_adresses,located_repository,db)
+    code =await create_code_postal(CodePostalBase(code_postal=postal_code),code_postal_repository,db)
+    value = await get_code_postal_value(code.code_postal,code_postal_repository,db)
+    await update_located(updated_address.Id_Users_adresses,LocatedBase(Id_Code_Postal=value.Id_Code_Postal,Id_Users_adresses=updated_address.Id_Users_adresses),located_repository,db)
     address_dict = model_to_dict(updated_address)
     return UsersAdressesBase(**address_dict)

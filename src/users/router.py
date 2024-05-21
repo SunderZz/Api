@@ -14,7 +14,10 @@ from adresse_types.repository import AdresseTypesRepository
 from users_adresses.router import create_user_address,update_user_address, get_user_addresses
 from users_adresses.schema import UsersAdressesBase
 from users_adresses.repository import UsersAdressesRepository
-
+from located.repository import LocatedRepository
+from code_postal.schema import CodePostalBase
+from code_postal.repository import CodePostalRepository
+from located.router import get_located_by_ids
 
 def get_db():
     db = SessionLocal()
@@ -59,15 +62,22 @@ async def update_user(user_id: int,user_data: UserBase, user_repository: UsersRe
     return UserBase(**user_dict)
 
 @router.post("/users/addresses/{user_id}", response_model=UsersAdressesBase)
-async def create_new_user_address(user_id:int,adresse:UsersAdressesBase,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
-    db_address = await create_user_address(adresse, user_adresse_repository,db)
+async def create_new_user_address(user_id:int,adresse:UsersAdressesBase,code_postal:CodePostalBase,code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
+    db_address = await create_user_address(adresse,code_postal,code_postal_repository,located_repository, user_adresse_repository,db)
     adresse_type = await get_adresses_type_user(user_id,adresse_type_repository,db)
     await create_adresses_types(adresse_type,adresse_type_repository,db)
     return db_address
 
 @router.put("/users/{adresses_id}/addresses", response_model=UsersAdressesBase)
-async def modify_user_address(user_id:int,adresses_id:int,adresse:UsersAdressesBase,adresse_type:AdresseTypeBase,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
-    db_address = await update_user_address(adresses_id,adresse, user_adresse_repository,db)
+async def modify_user_address(code_postal:int|None,user_id:int,adresses_id:int,adresse:UsersAdressesBase,adresse_type:AdresseTypeBase,located_repository:LocatedRepository= Depends(LocatedRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
+    code =await get_located_by_ids(adresses_id,located_repository,db)
+    print('ha')
+    code_postal_unchange = code.Id_Code_Postal
+    if not code_postal:
+        print('hey')
+        code_postal=code_postal_unchange
+    db_address = await update_user_address(adresses_id,code_postal,adresse,code_postal_repository, user_adresse_repository,located_repository,db)
+    print('ho')
     adresse_type = await adresse_type_repository.get_adressestypes_user(db, user_id)
     await update_adresse_type(adresse_type.Id_Adresse_Type,adresse_type,adresse_type_repository,db)
     return db_address

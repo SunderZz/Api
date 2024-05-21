@@ -28,7 +28,7 @@ async def get_locateds(located_repository: LocatedRepository = Depends(LocatedRe
     return [LocatedBase(**located_dict) for located_dict in locateds_list]
 
 @router.get("/located/{located_id}", status_code=status.HTTP_200_OK, response_model=LocatedBase)
-async def get_located_by_id(located_id: int, located_repository: LocatedRepository = Depends(LocatedRepository), db: Session = Depends(get_db)) -> LocatedBase:
+async def get_located_by_ids(located_id: int, located_repository: LocatedRepository = Depends(LocatedRepository), db: Session = Depends(get_db)) -> LocatedBase:
     located = await located_repository.get_located_by_id(db, located_id)
     if located is None:
         raise HTTPException(status_code=404, detail="located not found")

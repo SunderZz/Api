@@ -1,6 +1,6 @@
 import users.models as models
 from typing import Annotated
-from .schema import CodePostalBase
+from .schema import CodePostalBase,CodePostalIdBase
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 import main as get_db
@@ -29,14 +29,14 @@ async def get_code_postal(code_postal_repository: CodePostalRepository = Depends
     return [CodePostalBase(**code_postal_dict) for code_postal_dict in code_postal_list]
 
 
-@router.get("/code_postal/{code_postal}", response_model=CodePostalBase)
-async def get_code_postal_value(code_postal: str, code_postal_repository: CodePostalRepository = Depends(CodePostalRepository), db: Session = Depends(get_db)) -> CodePostalBase:
+@router.get("/code_postal/{code_postal}", response_model=CodePostalIdBase)
+async def get_code_postal_value(code_postal: int, code_postal_repository: CodePostalRepository = Depends(CodePostalRepository), db: Session = Depends(get_db)) -> CodePostalIdBase:
     value = await code_postal_repository.get_code_postal_query(db, code_postal)
     if value is None:
         raise HTTPException(status_code=404, detail="code_postal not found or attribute not found")
     code_postal_dict = model_to_dict(value)
         
-    return CodePostalBase(**code_postal_dict)
+    return CodePostalIdBase(**code_postal_dict)
 
 
 @router.post("/code_postal/", status_code=status.HTTP_201_CREATED, response_model=CodePostalBase)

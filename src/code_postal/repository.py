@@ -6,7 +6,7 @@ class CodePostalRepository:
         return db.query(Code_Postal).all()
     
     async def get_code_postal_query(self,db: Session, code_postal: int)->Code_Postal:
-        return db.query(Code_Postal).filter(Code_Postal.Id_Code_Postal == code_postal).first()  
+        return db.query(Code_Postal).filter(Code_Postal.code_postal == code_postal).first()  
 
 
     async def create_code_postal(self, db: Session, code_postal: Code_Postal)->Code_Postal:

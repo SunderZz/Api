@@ -65,12 +65,12 @@ async def get_product_value(products: int, products_repository: ProductRepositor
     return ProductBase(**product_dict)
 
 
-@router.post("/products/", status_code=status.HTTP_201_CREATED, response_model=ProductBase)
-async def create_product(season:int,product: ProductBase,is_on_repository: IsOnRepository = Depends(IsOnRepository),products_repository: ProductRepository = Depends(ProductRepository), db: Session = Depends(get_db))-> ProductBase:
+@router.post("/products/", status_code=status.HTTP_201_CREATED, response_model=ProductIdBase)
+async def create_products(season:int,product: ProductBase,is_on_repository: IsOnRepository = Depends(IsOnRepository),products_repository: ProductRepository = Depends(ProductRepository), db: Session = Depends(get_db))-> ProductIdBase:
     new_product = await products_repository.create_product(db, product)
     await create_is_on(IsOnBase(Id_Season=season,Id_Product=new_product.Id_Product),is_on_repository,db)
     product_dict = model_to_dict(new_product) 
-    return ProductBase(**product_dict)
+    return ProductIdBase(**product_dict)
 
 @router.put("/products/{product_id}", status_code=status.HTTP_200_OK, response_model=ProductBase)
 async def update_product(product_id: int, product: ProductBase,season:int|None = None,is_on_repository: IsOnRepository = Depends(IsOnRepository),product_repository: ProductRepository = Depends(ProductRepository), db: Session = Depends(get_db))-> ProductBase:

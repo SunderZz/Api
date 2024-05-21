@@ -76,7 +76,6 @@ async def update_admin(admin_id: int, admin: AdminBase,admin_repository: AdminRe
 async def update_product_active_status(product_id: int,admin_id: int, active: bool, repository: AdminRepository = Depends(AdminRepository),manage_repository: ManageRepository = Depends(ManageRepository), db: Session = Depends(get_db))->ProductBase:
     product = await repository.update_product_active_status(db, product_id, active)
     Timestamp = datetime.now().isoformat()
-    print(Timestamp)
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
     new_manage = await create_manage(ManageBase(Id_Admin=admin_id, Id_Product=product_id,Date_manage=Timestamp),product_id,manage_repository, db)

@@ -1,3 +1,4 @@
+from datetime import datetime
 import users.models as models
 from typing import Annotated
 from .schema import ProducersBase
@@ -7,6 +8,17 @@ import main as get_db
 from database import engine, SessionLocal
 from common import model_to_dict
 from .repository import ProducersRepository
+from products.router import create_products
+from give.router import create_give
+from products.repository import ProductRepository
+from products.schema import ProductBase
+from give.repository import GiveRepository
+from products.schema import ProductIdBase
+from give.schema import GiveBase
+from is_on.repository import IsOnRepository
+from unit.schema import UnitBase
+from unit.router import create_unity
+from unit.repository import UnitRepository
 
 def get_db():
     db = SessionLocal()
@@ -51,3 +63,12 @@ async def update_producer(producer_id: int, producer: ProducersBase,producer_rep
         raise HTTPException(status_code=404, detail="produit_image not found")
     produit_image_dict = model_to_dict(updated_producer) 
     return ProducersBase(**produit_image_dict)
+
+@router.post("/producers/{producer_id}/create_product_by_producer", status_code=status.HTTP_201_CREATED, response_model=ProductIdBase)
+async def create_product_by_producer(quantity:int,producer_id: int,unit:UnitBase,season:int,products:ProductBase,give_repository: GiveRepository = Depends(GiveRepository),unit_repository: UnitRepository = Depends(UnitRepository),is_on_repository: IsOnRepository = Depends(IsOnRepository),producers_repository: ProducersRepository = Depends(ProducersRepository),products_repository: ProductRepository = Depends(ProductRepository), db: Session = Depends(get_db))-> ProductIdBase:
+    product = await create_products(season,products,is_on_repository,products_repository,db)
+    Timestamp = datetime.now().isoformat()
+    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
+    unity = await create_unity(unit,unit_repository,db)
+    await create_give(GiveBase(Id_Producers=producer_id,Id_Unit=unity.Id_Unit,Id_Product=product.Id_Product,Quantity=quantity,Given_Date=given_date_exact), give_repository,db)
+    return product

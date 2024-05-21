@@ -5,11 +5,6 @@ class UnitRepository:
     async def get_units(self, db: Session)->Unit:
         return db.query(Unit).first()
     
-    async def get_unit_query(self, db: Session, query: str)->Unit:
-            unit = db.query(Unit).first()
-            if unit is None:
-                return None
-            return getattr(unit, query, None)
     
     async def create_unit(self, db: Session, unit: Unit)->Unit:
         db_unit = Unit(**unit.dict())

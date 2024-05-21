@@ -6,5 +6,6 @@ class UnitBase(BaseModel):
     Unit: int |None = None
     Gramme: int |None = None
 
-class UnitValueSchema(BaseModel):
-    value: float | int | None
+class UnitIdBase(BaseModel):
+    Id_Unit:int
+

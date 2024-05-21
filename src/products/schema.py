@@ -10,3 +10,6 @@ class ProductBase(BaseModel):
     Date_stop: date |None = None
     Discount: float |None = None
     Id_tva: int
+
+class ProductIdBase(BaseModel):
+    Id_Product : int

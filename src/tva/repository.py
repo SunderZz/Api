@@ -4,6 +4,9 @@ from .models import Tva
 class TvaRepository:
     async def get_tva(self, db: Session, tva_id: int):
         return db.query(Tva).filter(Tva.Id_Tva == tva_id).first()
+    
+    async def get_all_tva(self, db: Session)->list[Tva]:
+        return db.query(Tva).all()
 
     async def get_tva_by_name(self, db: Session, name: str):
         return db.query(Tva).filter(Tva.Name == name).first()

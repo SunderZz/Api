@@ -1,7 +1,7 @@
 import tva.models as models
 from typing import Annotated
 from .schema import TvaBase, TvaCalculationResult
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,status
 from sqlalchemy.orm import Session
 import main as get_db
 from database import engine, SessionLocal
@@ -29,6 +29,12 @@ async def get_tva(tva_id: int, tva_repository: TvaRepository = Depends(TvaReposi
         raise HTTPException(status_code=404, detail="Tva not found")
     tva_dict = model_to_dict(tva) 
     return TvaBase(**tva_dict)
+
+@router.get("/tva/", status_code=status.HTTP_200_OK, response_model=list[TvaBase])
+async def get_all_tva(tva_repository: TvaRepository = Depends(TvaRepository),db: Session = Depends(get_db))-> list[TvaBase]:
+    Tva = await tva_repository.get_all_tva(db)
+    tvas_list = [model_to_dict(tvas) for tvas in Tva]
+    return [TvaBase(**tva_dict) for tva_dict in tvas_list]
 
 @router.get("/tva/calculate/{tva_name}", response_model=TvaCalculationResult)
 async def calculate_tva(tva_name: str, price: float, db: Session = Depends(get_db), tva_repository: TvaRepository = Depends(TvaRepository))->TvaCalculationResult:

@@ -7,6 +7,12 @@ import main as get_db
 from database import engine, SessionLocal
 from common import model_to_dict
 from .repository import CustomersRepository
+from pay.router import create_pay
+from payement.router import create_payment
+from payement.schema import PaymentBase
+from payement.repository import PaymentRepository
+from pay.repository import PayRepository
+
 
 def get_db():
     db = SessionLocal()
@@ -30,7 +36,7 @@ async def get_customers(customers_repository: CustomersRepository = Depends(Cust
 
 
 @router.get("/customers/{customers}", response_model=CustomersBase)
-async def get_customer_value(customers: str, customers_repository: CustomersRepository = Depends(CustomersRepository), db: Session = Depends(get_db)) -> CustomersBase:
+async def get_customer_value(customers: int, customers_repository: CustomersRepository = Depends(CustomersRepository), db: Session = Depends(get_db)) -> CustomersBase:
     value = await customers_repository.get_customers_query(db, customers)
     if value is None:
         raise HTTPException(status_code=404, detail="customer not found or attribute not found")
@@ -52,3 +58,10 @@ async def update_customer(customer_id: int, customer: CustomersBase,customer_rep
         raise HTTPException(status_code=404, detail="customers not found")
     customer_dict = model_to_dict(updated_customer) 
     return CustomersBase(**customer_dict)
+
+# @router.post("/customers/payment", status_code=status.HTTP_201_CREATED, response_model=CustomersBase)
+# async def create_customer_payment(customer_id:int,pay:PaymentBase,customer: CustomersBase,customers_repository: CustomersRepository = Depends(CustomersRepository), db: Session = Depends(get_db))-> CustomersBase:
+#     id_customer = await get_customer_value(customer_id,customers_repository,db)
+#     buy = await create_pay(PaymentBase(Id_Orders=,Bills=,Status=,Amount=,Payment_Date=))
+#     customers_dict = model_to_dict(new_customer) 
+#     return CustomersBase(**customers_dict)

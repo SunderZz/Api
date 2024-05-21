@@ -8,6 +8,9 @@ class ProductRepository:
     async def get_product_query(self,db: Session, product: int)->Product:
         return db.query(Product).filter(Product.Id_Product == product).first()
     
+    async def get_product_id_by_name(self,db: Session, name: str)->Product:
+        return db.query(Product).filter(Product.Name == name).all()
+    
     async def get_products_by_name(self, db: Session, product_name: str) -> Product | list[Product] | None:
             products = db.query(Product).filter(Product.Name == product_name).all()
             if not products:

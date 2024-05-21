@@ -41,7 +41,7 @@ async def create_got(got: GotBase, got_repository: GotRepository = Depends(GotRe
     return GotBase(**got_dict)
 
 @router.put("/got/{got_id}", status_code=status.HTTP_200_OK, response_model=GotBase)
-async def update_got(got_id: int, got: GotBase, got_repository: GotRepository = Depends(GotRepository), db: Session = Depends(get_db)) -> GotBase:
+async def update_got( got: GotBase,got_id: int| None = None, got_repository: GotRepository = Depends(GotRepository), db: Session = Depends(get_db)) -> GotBase:
     updated_got = await got_repository.update_got(db, got_id, got)
     if updated_got is None:
         raise HTTPException(status_code=404, detail="got not found")

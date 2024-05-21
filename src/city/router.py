@@ -1,6 +1,6 @@
 import users.models as models
 from typing import Annotated
-from .schema import CityBase
+from .schema import CityBase,CityIdBase
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 import main as get_db
@@ -29,14 +29,14 @@ async def get_city(city_repository: CityRepository = Depends(CityRepository),db:
     return [CityBase(**city_dict) for city_dict in city_list]
 
 
-@router.get("/city/{city}", response_model=CityBase)
-async def get_city_value(city: str, city_repository: CityRepository = Depends(CityRepository), db: Session = Depends(get_db)) -> CityBase:
+@router.get("/city/{city}", response_model=CityIdBase)
+async def get_city_value(city: str, city_repository: CityRepository = Depends(CityRepository), db: Session = Depends(get_db)) -> CityIdBase:
     value = await city_repository.get_city_query(db, city)
     if value is None:
         raise HTTPException(status_code=404, detail="city not found or attribute not found")
     city_dict = model_to_dict(value)
         
-    return CityBase(**city_dict)
+    return CityIdBase(**city_dict)
 
 
 @router.post("/city/", status_code=status.HTTP_201_CREATED, response_model=CityBase)

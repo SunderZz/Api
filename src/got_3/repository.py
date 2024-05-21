@@ -16,7 +16,7 @@ class GotRepository:
     async def get_got_by_id(self,db: Session, id: int)->Got:
         return db.query(Got).filter(Got.Id_City == id).first()
 
-    async def update_got(self,db: Session, id: int, got: Got)->Got:
+    async def update_got(self,db: Session, got: Got, id: int|None = None)->Got:
         db_Got = db.query(Got).filter(Got.Id_City == id).first()
         for key, value in got.dict().items():
             setattr(db_Got, key, value)

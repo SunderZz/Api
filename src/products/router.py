@@ -33,7 +33,6 @@ async def get_products(produit_repository: ProductRepository = Depends(ProductRe
 @router.get("/products_by_name/{products}", response_model=ProductBase | list[ProductBase])
 async def get_product_by_name(products_name: str, products_repository: ProductRepository = Depends(ProductRepository), db: Session = Depends(get_db)) -> list[ProductBase]|ProductBase|None:
     value = await products_repository.get_products_by_name(db, products_name)
-    print(len(value))
     if value is None:
         raise HTTPException(status_code=404, detail="product not found or attribute not found")
     if isinstance(value, list):
@@ -55,14 +54,13 @@ async def get_product_id_by_name(products_name: str, products_repository: Produc
         product_dict = model_to_dict(value)
         return ProductIdBase(**product_dict)
 
-@router.get("/products/{products}", response_model=ProductBase)
-async def get_product_value(products: int, products_repository: ProductRepository = Depends(ProductRepository), db: Session = Depends(get_db)) -> ProductBase:
+@router.get("/products/{products}/query", response_model=ProductIdBase)
+async def get_product_value(products: int, products_repository: ProductRepository = Depends(ProductRepository), db: Session = Depends(get_db)) -> ProductIdBase:
     value = await products_repository.get_product_query(db, products)
     if value is None:
         raise HTTPException(status_code=404, detail="product not found or attribute not found")
     product_dict = model_to_dict(value)
-        
-    return ProductBase(**product_dict)
+    return ProductIdBase(**product_dict)
 
 
 @router.post("/products/", status_code=status.HTTP_201_CREATED, response_model=ProductIdBase)

@@ -23,3 +23,22 @@ class LinedeRepository:
         db.commit()
         db.refresh(db_linede)
         return db_linede
+
+
+    async def add_products_to_order(self, db: Session, linede: Linede|list[Linede] ) -> list[Linede] | Linede:
+        if isinstance(linede, list):
+            for line in linede:
+                lignes = []
+                db_linede = Linede(**line.dict())
+                db.add(db_linede)
+                db.commit()
+                db.refresh(db_linede)
+                lignes.append(db_linede)
+            return lignes
+        else:
+            db_linede = Linede(**linede.dict())
+            db.add(db_linede)
+            db.commit()
+            db.refresh(db_linede)
+            return db_linede
+        

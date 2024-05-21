@@ -7,3 +7,7 @@ class OrdersBase(BaseModel):
     Preference_Ship: str
     Ship_Date: date |None = None
     Id_Casual: int
+
+class OrdersIdBase(BaseModel):
+    Id_Orders:int
+

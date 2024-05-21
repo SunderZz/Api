@@ -10,6 +10,6 @@ class Linede(Base):
 
     Id_Orders = Column(Integer, ForeignKey('orders.Id_Orders'), nullable=False)
     Id_Product = Column(Integer, ForeignKey('product.Id_Product'), nullable=False)
-    qte = Column(String(50), nullable=False)
+    qte = Column(Integer, nullable=False)
     orders = relationship("Orders", back_populates="lines")
     product = relationship("Product", back_populates="lines")

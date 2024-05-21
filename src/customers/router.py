@@ -12,8 +12,9 @@ from payement.router import create_payment
 from payement.schema import PaymentBase
 from payement.repository import PaymentRepository
 from pay.repository import PayRepository
-
-
+from orders.schema import OrdersBase
+from orders.repository import OrdersRepository
+from orders.router import create_orders_from_user,update_orders
 def get_db():
     db = SessionLocal()
     try: 
@@ -65,3 +66,10 @@ async def update_customer(customer_id: int, customer: CustomersBase,customer_rep
 #     buy = await create_pay(PaymentBase(Id_Orders=,Bills=,Status=,Amount=,Payment_Date=))
 #     customers_dict = model_to_dict(new_customer) 
 #     return CustomersBase(**customers_dict)
+
+@router.post("/customers/orders", status_code=status.HTTP_201_CREATED, response_model=CustomersBase)
+async def create_customer_orders(customer: CustomersBase,customers_repository: CustomersRepository = Depends(CustomersRepository), db: Session = Depends(get_db))-> CustomersBase:
+    order = await create_orders_from_user()
+    new_customer = await customers_repository.create_customers(db, customer)
+    customers_dict = model_to_dict(new_customer) 
+    return CustomersBase(**customers_dict)

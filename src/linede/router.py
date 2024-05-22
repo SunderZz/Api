@@ -27,12 +27,17 @@ async def get_linedes(linede_repository: LinedeRepository = Depends(LinedeReposi
     linedes_list = [model_to_dict(linede) for linede in linedes]
     return [LinedeBase(**linede_dict) for linede_dict in linedes_list]
 
-@router.get("/linede/{linede_id}", status_code=status.HTTP_200_OK, response_model=LinedeBase)
-async def get_linede_by_id(linede_id: int, linede_repository: LinedeRepository = Depends(LinedeRepository), db: Session = Depends(get_db)) -> LinedeBase:
+@router.get("/linede/{linede_id}", status_code=status.HTTP_200_OK, response_model=LinedeBase|list[LinedeBase])
+async def get_linede_by_id(linede_id: int, linede_repository: LinedeRepository = Depends(LinedeRepository), db: Session = Depends(get_db)) -> LinedeBase|list[LinedeBase]:
     linede = await linede_repository.get_linede_by_id(db, linede_id)
     if linede is None:
         raise HTTPException(status_code=404, detail="linede not found")
-    return LinedeBase(**model_to_dict(linede))
+    if isinstance(linede, list):
+        linedes_list = [model_to_dict(line) for line in linede]
+        return [LinedeBase(**linede_dict) for linede_dict in linedes_list]
+    else:
+        linede_dict = model_to_dict(linede)
+        return LinedeBase(**linede_dict)
 
 @router.post("/linede/", status_code=status.HTTP_201_CREATED, response_model=LinedeBase)
 async def create_linede(linede: LinedeBase, linede_repository: LinedeRepository = Depends(LinedeRepository), db: Session = Depends(get_db)) -> LinedeBase:

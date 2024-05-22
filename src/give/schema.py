@@ -8,4 +8,9 @@ class GiveBase(BaseModel):
     Quantity: int
     Given_Date: date
 
+class GiveCalcBase(BaseModel):
+    Id_Product: int
+    Quantity: int
+    Given_Date: date
+
 

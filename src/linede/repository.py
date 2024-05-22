@@ -3,7 +3,7 @@ from .models import Linede
 
 class LinedeRepository:
 
-    async def create_linede(self,db: Session, linede: Linede)->Linede:
+    async def create_linede(self,db: Session, linede: Linede )->Linede:
         db_linede = Linede(**linede.dict())
         db.add(db_linede)
         db.commit()
@@ -13,8 +13,16 @@ class LinedeRepository:
     async def get_linede(self,db: Session)->Linede:
         return db.query(Linede).all()
 
-    async def get_linede_by_id(self,db: Session, id: int)->Linede:
-        return db.query(Linede).filter(Linede.Id_Orders == id).first()
+    async def get_linede_by_id(self, db: Session, id: int) -> Linede | list[Linede]:
+            result = db.query(Linede).filter(Linede.Id_Orders == id).all()
+            
+            if not result:
+                return []  
+            
+            if len(result) > 1:
+                return result
+            
+            return result[0]
 
     async def update_linede(self,db: Session, id: int, linede: Linede)->Linede:
         db_linede = db.query(Linede).filter(Linede.Id_Orders == id).first()

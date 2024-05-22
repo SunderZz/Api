@@ -1,7 +1,7 @@
 import season.models as models
 import main as get_db
 from typing import Annotated
-from .schema import GiveBase
+from .schema import GiveBase,GiveCalcBase
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal
@@ -41,7 +41,7 @@ async def create_give(give: GiveBase, give_repository: GiveRepository = Depends(
     return GiveBase(**give_dict)
 
 @router.put("/give/{give_id}", status_code=status.HTTP_200_OK, response_model=GiveBase)
-async def update_give(give_id: int, give: GiveBase, give_repository: GiveRepository = Depends(GiveRepository), db: Session = Depends(get_db)) -> GiveBase:
+async def update_give(give_id: int, give: GiveCalcBase, give_repository: GiveRepository = Depends(GiveRepository), db: Session = Depends(get_db)) -> GiveBase:
     updated_give = await give_repository.update_give(db, give_id, give)
     if updated_give is None:
         raise HTTPException(status_code=404, detail="give not found")

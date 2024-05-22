@@ -1,3 +1,4 @@
+from datetime import datetime
 import users.models as models
 from typing import Annotated
 from .schema import OrdersBase, OrdersIdBase
@@ -7,13 +8,15 @@ import main as get_db
 from database import engine, SessionLocal
 from .repository import OrdersRepository
 from common import model_to_dict
-from linede.router import create_linede_for_order, update_linede
+from linede.router import create_linede_for_order, get_linede_by_id
 from linede.repository import LinedeRepository
 from linede.schema import LinedeBase
 from products.router import get_product_value
 from products.repository import ProductRepository
 from products.schema import ProductBase
-
+from give.router import get_give_by_id,update_give
+from give.schema import GiveCalcBase
+from give.repository import GiveRepository
 def get_db():
     db = SessionLocal()
     try: 
@@ -37,7 +40,6 @@ async def get_orderss(orders_repository: OrdersRepository = Depends(OrdersReposi
 
 @router.get("/all_orders/", response_model=OrdersBase)
 async def get_orders_value(id_orders: int, orders_repository: OrdersRepository = Depends(OrdersRepository), db: Session = Depends(get_db)) -> OrdersBase:
-    print(id_orders)
     value = await orders_repository.get_orders_query(db, id_orders)
     if value is None:
         raise HTTPException(status_code=404, detail="orders not found or attribute not found")
@@ -64,42 +66,47 @@ async def update_orders(orders_id: int, orders: OrdersBase,orders_repository: Or
 async def create_orders_card(casual: OrdersBase,products:int | list[int], quantity:int | list[int],orders_repository: OrdersRepository = Depends(OrdersRepository),products_repository: ProductRepository = Depends(ProductRepository),linede_repository: LinedeRepository = Depends(LinedeRepository), db: Session = Depends(get_db))-> OrdersIdBase:
     
     new_orders = await create_orders_from_user(casual,orders_repository,db)
-    print(len(products))
-    if len(products) ==  1:
+    if isinstance(products, int):
         product_added = await get_product_value(products,products_repository,db)
         for product_in_card in product_added:
             print(product_added)
             product_id = product_in_card[1]
-            quantité = quantity[0]
-            created_card = await create_linede_for_order(LinedeBase(Id_Orders=new_orders.Id_Orders,Id_Product=product_id,qte=quantité),linede_repository,db)
+            created_card = await create_linede_for_order(LinedeBase(Id_Orders=new_orders.Id_Orders,Id_Product=product_id,qte=quantity),linede_repository,db)
     else:
         product_added = []
         for product in products:
             result = await get_product_value(product,products_repository,db)
             product_added.append(result)
-        for product_in_card in product_added:
-            print(product_added)
+        for product_in_card, quantite in zip(product_added, quantity):  # Utilisez zip pour associer chaque produit avec sa quantité correspondante
             product_id = product_in_card.Id_Product
-            quantité = quantity[0]
-            created_card = await create_linede_for_order(LinedeBase(Id_Orders=new_orders.Id_Orders,Id_Product=product_id,qte=quantité),linede_repository,db)
+            created_card = await create_linede_for_order(LinedeBase(Id_Orders=new_orders.Id_Orders, Id_Product=product_id, qte=quantite), linede_repository, db)
     return created_card
 
-@router.put("/orders/card", status_code=status.HTTP_201_CREATED, response_model=OrdersIdBase)
-async def update_orders_card(casual: OrdersBase,products:int | list[int], quantity:int | list[int],orders_repository: OrdersRepository = Depends(OrdersRepository),products_repository: ProductRepository = Depends(ProductRepository),linede_repository: LinedeRepository = Depends(LinedeRepository), db: Session = Depends(get_db))-> OrdersIdBase:
-    await get_orders_value
+@router.put("/update_order/", status_code=status.HTTP_201_CREATED, response_model=LinedeBase)
+async def update_orders_card(order: int,products:int , quantity:int ,products_repository: ProductRepository = Depends(ProductRepository),linede_repository: LinedeRepository = Depends(LinedeRepository), db: Session = Depends(get_db))-> LinedeBase:
+    choosen_product = await get_product_value(products,products_repository,db)
+    new_product = await create_linede_for_order(LinedeBase(Id_Orders=order,Id_Product=choosen_product.Id_Product,qte=quantity),linede_repository,db)
+    return new_product
 
-
-# @router.put("/orders/card", status_code=status.HTTP_201_CREATED, response_model=OrdersIdBase)
-# async def valid_orders_card(casual: OrdersBase,products:int | list[int], quantity:int | list[int],orders_repository: OrdersRepository = Depends(OrdersRepository),products_repository: ProductRepository = Depends(ProductRepository),linede_repository: LinedeRepository = Depends(LinedeRepository), db: Session = Depends(get_db))-> OrdersIdBase:
-    
-#     new_orders = await create_orders_from_user(casual,orders_repository,db)
-#     if len(products) >  2:
-#         for product in products:
-#             product_added = await get_product_value(product,products_repository,db)
-#     else:
-#         product_added = await get_product_value(products,products_repository,db)
-#     for product_in_card in product_added:
-#         product_id = product_in_card[1]
-#         quantité = quantity[0]
-#         created_card = await create_linede_for_order(LinedeBase(Id_Orders=new_orders.Id_Orders,Id_Product=product_id,qte=quantité),linede_repository,db)
-#     return created_card
+@router.put("/valid_order/", status_code=status.HTTP_201_CREATED, response_model=OrdersBase |list[OrdersBase])
+async def valid_orders_card(order:int,id_customers: int,give_repository: GiveRepository = Depends(GiveRepository),orders_repository: OrdersRepository = Depends(OrdersRepository),linede_repository: LinedeRepository = Depends(LinedeRepository), db: Session = Depends(get_db))-> OrdersBase | list[OrdersBase]:
+    Timestamp = datetime.now().isoformat()
+    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
+    card = await get_linede_by_id(order, linede_repository,db)
+    if isinstance(card, list):
+        for object in card :
+            product = await get_give_by_id(object.Id_Product,give_repository,db)
+            updated_quantity = product.Quantity - object.qte
+            if updated_quantity < 0:
+                raise HTTPException(status_code=403, detail="Capacity not authorize")
+            await update_give(object.Id_Product,GiveCalcBase(Id_Product=object.Id_Product, Quantity=updated_quantity,Given_Date=given_date_exact),give_repository,db)
+        order_final = await update_orders(order, OrdersBase(Command_Date=given_date_exact, Status=False,Id_Casual=id_customers),orders_repository,db)
+        return order_final
+    else:
+        product = await get_give_by_id(card.Id_Product,give_repository,db)
+        updated_quantity = product.Quantity - card.qte
+        if updated_quantity < 0:
+                raise HTTPException(status_code=403, detail="Capacity not authorize")
+        await update_give(card.Id_Product,GiveCalcBase(Id_Product=card.Id_Product, Quantity=updated_quantity,Given_Date=given_date_exact),give_repository,db)
+        order_final = await update_orders(order, OrdersBase(Command_Date=given_date_exact, Status=False,Id_Casual=id_customers),orders_repository,db)
+        return order_final

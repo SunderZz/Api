@@ -5,9 +5,11 @@ class CityRepository:
     async def get_city(self, db: Session)->list[City]:
         return db.query(City).all()
     
-    async def get_city_query(self,db: Session, city: str)->City:
-        return db.query(City).filter(City.Name == city).first()  
-
+    async def get_city_by_name(self,db: Session, city: str)->City:
+        return db.query(City).filter(City.Name == city).first()
+      
+    async def get_city_by_id(self,db: Session, city: int)->City:
+        return db.query(City).filter(City.Id_City == city).first()  
 
     async def create_city(self, db: Session, city: City)->City:
         db_city = City(**city.dict())

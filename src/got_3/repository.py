@@ -13,8 +13,8 @@ class GotRepository:
     async def get_got(self,db: Session)->Got:
         return db.query(Got).all()
 
-    async def get_got_by_id(self,db: Session, id: int)->Got:
-        return db.query(Got).filter(Got.Id_City == id).first()
+    async def get_got_by_id(self,db: Session, id: int)->Got |list[Got]:
+        return db.query(Got).filter(Got.Id_Code_Postal == id).all()
 
     async def update_got(self,db: Session, got: Got, id: int|None = None)->Got:
         db_Got = db.query(Got).filter(Got.Id_City == id).first()

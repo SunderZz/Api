@@ -37,18 +37,20 @@ async def get_adresses_type_value(adresses_types: str, adresses_types_repository
         
     return AdresseTypeBase(**adresses_type_dict)
 
-@router.get("/adresses_types/{user_id}", response_model=AdresseTypeBase)
-async def get_adresses_type_user(user_id: int, adresses_types_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> AdresseTypeBase:
+@router.get("/adresses_types_by_user/{user_id}", response_model= AdresseTypeBase| list[AdresseTypeBase])
+async def get_adresses_type_user(user_id: int, adresses_types_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> AdresseTypeBase| list[AdresseTypeBase]:
     value = await adresses_types_repository.get_adressestypes_user(db, user_id)
     if value is None:
         raise HTTPException(status_code=404, detail="adresses_type not found or attribute not found")
+    if isinstance(value,list):
+        adresses_types_list = [model_to_dict(adresses_type) for adresses_type in value]
+        return [AdresseTypeBase(**adresses_type_dict) for adresses_type_dict in adresses_types_list]
     adresses_type_dict = model_to_dict(value)
-        
     return AdresseTypeBase(**adresses_type_dict)
 
 
 @router.post("/adresses_types/", status_code=status.HTTP_201_CREATED, response_model=AdresseTypeBase)
-async def create_adresses_types(adresse_type: AdresseTypeBase,adresses_types_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db))-> AdresseTypeBase:
+async def create_adresses_types(user:int,adresse_type: AdresseTypeBase,adresses_types_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db))-> AdresseTypeBase:
     new_adresse_type = await adresses_types_repository.create_adressestypes(db, adresse_type)
     adresses_type_dict = model_to_dict(new_adresse_type) 
     return AdresseTypeBase(**adresses_type_dict)

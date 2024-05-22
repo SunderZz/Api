@@ -22,6 +22,7 @@ from city.schema import CityBase
 from got_3.repository import GotRepository
 from city.repository import CityRepository
 from preference_ship.repository import PreferenceshipRepository
+from asso_33.repository import Asso_33Repository
 def get_db():
     db = SessionLocal()
     try: 
@@ -65,11 +66,9 @@ async def update_user(user_id: int,user_data: UserBase, user_repository: UsersRe
     return UserBase(**user_dict)
 
 @router.post("/users/addresses/{user_id}", response_model=UsersAdressesBase)
-async def create_new_user_address(user_id:int,adresse:UsersAdressesBase,city:CityBase,code_postal:CodePostalBase,got_repository:GotRepository= Depends(GotRepository),city_repository:CityRepository= Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),asso_33_repository: GotRepository = Depends(GotRepository),preference_ship_repository: PreferenceshipRepository = Depends(PreferenceshipRepository),
+async def create_new_user_address(adresse:UsersAdressesBase,city:CityBase,code_postal:CodePostalBase,got_repository:GotRepository= Depends(GotRepository),city_repository:CityRepository= Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),asso_33_repository: Asso_33Repository = Depends(Asso_33Repository),preference_ship_repository: PreferenceshipRepository = Depends(PreferenceshipRepository),
  db: Session = Depends(get_db)) -> UsersAdressesBase:
-    db_address = await create_user_an_address(adresse,code_postal,city,asso_33_repository,got_repository,preference_ship_repository,city_repository,code_postal_repository,located_repository, user_adresse_repository,db)
-    adresse_type = await get_adresses_type_user(user_id,adresse_type_repository,db)
-    await create_adresses_types(adresse_type,adresse_type_repository,db)
+    db_address = await create_user_an_address(adresse,code_postal,city,got_repository,asso_33_repository,preference_ship_repository,city_repository,code_postal_repository,located_repository, user_adresse_repository,db)
     return db_address
 
 @router.put("/users/{adresses_id}/addresses", response_model=UsersAdressesBase)

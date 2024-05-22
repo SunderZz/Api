@@ -12,10 +12,10 @@ from common import model_to_dict
 from located.router import create_located,update_located,get_located_by_ids
 from located.schema import LocatedBase
 from located.repository import LocatedRepository
-from code_postal.router import create_code_postal,update_code_postal,get_code_postal_value
+from code_postal.router import create_code_postales,update_code_postal,get_code_postal_value
 from code_postal.schema import CodePostalBase, CodePostalIdBase
 from code_postal.repository import CodePostalRepository
-from city.router import create_city,update_city,get_city_value
+from city.router import create_city,update_city,get_city_by_names
 from city.schema import CityBase, CityIdBase
 from city.repository import CityRepository
 from got_3.router import create_got,update_got,get_got_by_id
@@ -54,10 +54,10 @@ async def get_user_addresses(adresse_id: int,user_adresse_repository: UsersAdres
 @router.post("/users_adresses/addresses", response_model=UsersAdressesBase)
 async def create_user_an_address(address: UsersAdressesBase,code_postal:CodePostalBase,city: CityBase,got_repository:GotRepository = Depends(GotRepository),asso_33_repository:Asso_33Repository = Depends(Asso_33Repository),preference_ship_repository:PreferenceshipRepository = Depends(PreferenceshipRepository),city_repositoy:CityRepository = Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
     db_address = await user_adresse_repository.create_user_address(db, address)
-    code =await create_code_postal(code_postal,code_postal_repository,db)
+    code =await create_code_postales(code_postal,code_postal_repository,db)
     value = await get_code_postal_value(code.code_postal,code_postal_repository,db)
     city_value = await create_city(city,city_repositoy,db)
-    city_id = await get_city_value(city_value.Name,city_repositoy,db)
+    city_id = await get_city_by_names(city_value.Name,city_repositoy,db)
     await create_got(GotBase(Id_Code_Postal=value.Id_Code_Postal,Id_City=city_id.Id_City),got_repository,db)
     await create_located(LocatedBase(Id_Code_Postal=value.Id_Code_Postal,Id_Users_adresses=db_address.Id_Users_adresses),located_repository,db)
     ship_id = await create_preference_ship(PreferenceshipBase(),preference_ship_repository,db)
@@ -71,14 +71,14 @@ async def update_user_address(address_id: int,address: UsersAdressesBase,postal_
     updated_address = await user_adresse_repository.update_user_address(db, address_id, address)
     await get_located_by_ids(updated_address.Id_Users_adresses,located_repository,db)
     if postal_code:
-        code =await create_code_postal(CodePostalBase(code_postal=postal_code),code_postal_repository,db)
+        code =await create_code_postales(CodePostalBase(code_postal=postal_code),code_postal_repository,db)
         value = await get_code_postal_value(code.code_postal,code_postal_repository,db)
         await update_located(updated_address.Id_Users_adresses,LocatedBase(Id_Code_Postal=value.Id_Code_Postal,Id_Users_adresses=updated_address.Id_Users_adresses),located_repository,db)
     if city:
         city_value = await create_city(CityBase(Name=city),city_repository,db)
-        value_city = await get_city_value(city_value.Name,city_repository,db)
+        value_city = await get_city_by_names(city_value.Name,city_repository,db)
         if city and postal_code:
-            code =await create_code_postal(CodePostalBase(code_postal=postal_code),code_postal_repository,db)
+            code =await create_code_postales(CodePostalBase(code_postal=postal_code),code_postal_repository,db)
             value = await get_code_postal_value(code.code_postal,code_postal_repository,db)
             print(value_city.Id_City)
             await update_got(city,GotBase(Id_City=value_city.Id_City,Id_Code_Postal=value.Id_Code_Postal),got_repository,db)

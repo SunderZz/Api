@@ -27,12 +27,16 @@ async def get_is_ons(is_on_repository: IsOnRepository = Depends(IsOnRepository),
     is_ons_list = [model_to_dict(is_on) for is_on in is_ons]
     return [IsOnBase(**is_on_dict) for is_on_dict in is_ons_list]
 
-@router.get("/is_on/{is_on_id}", status_code=status.HTTP_200_OK, response_model=IsOnBase)
-async def get_is_on_by_id(is_on_id: int, is_on_repository: IsOnRepository = Depends(IsOnRepository), db: Session = Depends(get_db)) -> IsOnBase:
+@router.get("/is_on_by_id/{is_on_id}", status_code=status.HTTP_200_OK, response_model=IsOnBase | list[IsOnBase])
+async def get_is_on_by_id(is_on_id: int, is_on_repository: IsOnRepository = Depends(IsOnRepository), db: Session = Depends(get_db)) -> IsOnBase | list[IsOnBase]:
     is_on = await is_on_repository.get_is_on_by_id(db, is_on_id)
     if is_on is None:
         raise HTTPException(status_code=404, detail="is_on not found")
-    return IsOnBase(**model_to_dict(is_on))
+    if isinstance(is_on, list):
+        is_ons_list = [model_to_dict(is_ons) for is_ons in is_on]
+        return [IsOnBase(**is_on_dict) for is_on_dict in is_ons_list]
+    else:
+        return IsOnBase(**model_to_dict(is_on))
 
 @router.post("/is_on/", status_code=status.HTTP_201_CREATED, response_model=IsOnBase)
 async def create_is_on(is_on: IsOnBase, is_on_repository: IsOnRepository = Depends(IsOnRepository), db: Session = Depends(get_db)) -> IsOnBase:

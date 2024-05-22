@@ -11,6 +11,13 @@ class ProductRepository:
     async def get_product_id_by_name(self,db: Session, name: str)->Product:
         return db.query(Product).filter(Product.Name == name).all()
     
+    async def get_product_id(self,db: Session, id: int)->Product:
+        return db.query(Product).filter(Product.Id_Product == id).first()
+    
+    async def get_product_by_discount(self,db: Session)->Product:
+        return db.query(Product).filter(Product.Discount.isnot(None), Product.Discount > 0).all()
+
+    
     async def get_products_by_name(self, db: Session, product_name: str) -> Product | list[Product] | None:
             products = db.query(Product).filter(Product.Name == product_name).all()
             if not products:

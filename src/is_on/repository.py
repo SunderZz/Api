@@ -13,8 +13,8 @@ class IsOnRepository:
     async def get_is_on(self,db: Session)->Is_On:
         return db.query(Is_On).all()
 
-    async def get_is_on_by_id(self,db: Session, id: int)->Is_On:
-        return db.query(Is_On).filter(Is_On.Id_Product == id).first()
+    async def get_is_on_by_id(self,db: Session, id: int)->Is_On | list[Is_On]:
+        return db.query(Is_On).filter(Is_On.Id_Season == id).all()
 
     async def update_is_on(self,db: Session, id: int, is_On: Is_On)->Is_On:
         db_is_On = db.query(Is_On).filter(Is_On.Id_Product == id).first()

@@ -8,7 +8,7 @@ from database import engine, SessionLocal
 from .repository import ProductRepository
 from common import model_to_dict
 from is_on.repository import IsOnRepository
-from is_on.router import create_is_on, update_is_on
+from is_on.router import create_is_on, update_is_on,get_is_on_by_id
 from is_on.schema import IsOnBase
 
 def get_db():
@@ -27,6 +27,12 @@ db_dependency= Annotated[Session, Depends(get_db)]
 @router.get("/products/", status_code=status.HTTP_200_OK, response_model=list[ProductBase])
 async def get_products(produit_repository: ProductRepository = Depends(ProductRepository),db: Session = Depends(get_db))-> list[ProductBase]:
     products = await produit_repository.get_product(db)
+    products_list = [model_to_dict(product) for product in products]
+    return [ProductBase(**product_dict) for product_dict in products_list]
+
+@router.get("/products_discount/", status_code=status.HTTP_200_OK, response_model=list[ProductBase])
+async def get_products_discount(produit_repository: ProductRepository = Depends(ProductRepository),db: Session = Depends(get_db))-> list[ProductBase]:
+    products = await produit_repository.get_product_by_discount(db)
     products_list = [model_to_dict(product) for product in products]
     return [ProductBase(**product_dict) for product_dict in products_list]
 
@@ -53,6 +59,14 @@ async def get_product_id_by_name(products_name: str, products_repository: Produc
     else:
         product_dict = model_to_dict(value)
         return ProductIdBase(**product_dict)
+    
+@router.get("/products_by_id/", response_model=ProductBase | list[ProductBase] |None)
+async def get_product_by_ids(id: int, products_repository: ProductRepository = Depends(ProductRepository), db: Session = Depends(get_db)) -> list[ProductBase]|ProductBase|None:
+    value = await products_repository.get_product_id(db, id)
+    if value is None:
+        raise HTTPException(status_code=404, detail="product not found or attribute not found")
+    product_dict = model_to_dict(value)
+    return ProductBase(**product_dict)
 
 @router.get("/products/{products}/query", response_model=ProductIdBase)
 async def get_product_value(products: int, products_repository: ProductRepository = Depends(ProductRepository), db: Session = Depends(get_db)) -> ProductIdBase:
@@ -61,6 +75,25 @@ async def get_product_value(products: int, products_repository: ProductRepositor
         raise HTTPException(status_code=404, detail="product not found or attribute not found")
     product_dict = model_to_dict(value)
     return ProductIdBase(**product_dict)
+
+@router.get("/products/season", response_model=ProductBase |list[ProductBase])
+async def get_product_value_by_season(is_on: int, products_repository: ProductRepository = Depends(ProductRepository),is_on_repository: IsOnRepository = Depends(IsOnRepository), db: Session = Depends(get_db)) -> ProductBase |list[ProductBase]:
+    value = await products_repository.get_product(db)
+    product_in_season_ids = []
+    for product in value:
+        seasons = await get_is_on_by_id(is_on, is_on_repository, db)
+        if isinstance(seasons, list):
+            for season in seasons:
+                if product.Id_Product == season.Id_Product:
+                    product_in_season_ids.append(product.Id_Product)
+        else:
+            if product.Id_Product == seasons.Id_Product:
+                product_in_season_ids.append(product.Id_Product)
+    results = []
+    for produit_id in product_in_season_ids:
+        result = await get_product_by_ids(produit_id, products_repository, db)
+        results.append(result)
+    return results
 
 
 @router.post("/products/", status_code=status.HTTP_201_CREATED, response_model=ProductIdBase)

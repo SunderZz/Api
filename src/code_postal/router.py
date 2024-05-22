@@ -84,14 +84,11 @@ async def get_city_by_code(code_id: int, got_repository: GotRepository = Depends
                 if code.Id_City == cities.Id_City:
                     city_in_code_ids.append(code.Id_City)
         else:
-            print(cities.Id_City)
-            print(value.Id_City)
+
             if value.Id_City == cities.Id_City:
                 city_in_code_ids.append(code.Id_City)
     results = []
     for cities_id in city_in_code_ids:
-        print(city_in_code_ids)
-        print(cities_id)
         result = await get_city_with_ids(cities_id, city_repository, db)
         results.append(result)
     return results

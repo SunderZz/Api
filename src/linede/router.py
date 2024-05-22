@@ -41,7 +41,6 @@ async def get_linede_by_id(linede_id: int, linede_repository: LinedeRepository =
 
 @router.post("/linede/", status_code=status.HTTP_201_CREATED, response_model=LinedeBase)
 async def create_linede(linede: LinedeBase, linede_repository: LinedeRepository = Depends(LinedeRepository), db: Session = Depends(get_db)) -> LinedeBase:
-    print(linede)
     new_linede = await linede_repository.create_linede(db,linede)
     linede_dict = model_to_dict(new_linede)
     return LinedeBase(**linede_dict)

@@ -36,9 +36,14 @@ async def get_located_by_ids(located_id: int, located_repository: LocatedReposit
 
 @router.post("/located/", status_code=status.HTTP_201_CREATED, response_model=LocatedBase)
 async def create_located(located: LocatedBase, located_repository: LocatedRepository = Depends(LocatedRepository), db: Session = Depends(get_db)) -> LocatedBase:
-    new_located = await located_repository.create_located(db, located)
-    located_dict = model_to_dict(new_located)
-    return LocatedBase(**located_dict)
+    id_code= located.Id_Users_adresses
+    existing_code_postal = await get_located_by_ids(id_code,located_repository,db)
+    if existing_code_postal is not None:
+        return existing_code_postal
+    else:
+        new_located = await located_repository.create_located(db, located)
+        located_dict = model_to_dict(new_located)
+        return LocatedBase(**located_dict)
 
 @router.put("/located/{located_id}", status_code=status.HTTP_200_OK, response_model=LocatedBase)
 async def update_located(located_id: int, located: LocatedBase, located_repository: LocatedRepository = Depends(LocatedRepository), db: Session = Depends(get_db)) -> LocatedBase:

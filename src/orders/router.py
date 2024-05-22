@@ -50,7 +50,6 @@ async def get_orders_value(id_orders: int, orders_repository: OrdersRepository =
 @router.post("/orders/", status_code=status.HTTP_201_CREATED, response_model=OrdersIdBase)
 async def create_orders_from_user(orders: OrdersBase,orders_repository: OrdersRepository = Depends(OrdersRepository), db: Session = Depends(get_db))-> OrdersIdBase:
     new_orders = await orders_repository.create_orders(db, orders)
-    print(new_orders)
     orders_dict = model_to_dict(new_orders) 
     return OrdersIdBase(**orders_dict)
 
@@ -69,7 +68,6 @@ async def create_orders_card(casual: OrdersBase,products:int | list[int], quanti
     if isinstance(products, int):
         product_added = await get_product_value(products,products_repository,db)
         for product_in_card in product_added:
-            print(product_added)
             product_id = product_in_card[1]
             created_card = await create_linede_for_order(LinedeBase(Id_Orders=new_orders.Id_Orders,Id_Product=product_id,qte=quantity),linede_repository,db)
     else:

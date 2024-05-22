@@ -44,13 +44,12 @@ async def create_got(got: GotBase, got_repository: GotRepository = Depends(GotRe
     if len(existing_code_postal) == 0 :
         return existing_code_postal
     new_got = await got_repository.create_got(db, got)
-    print('hi')
     got_dict = model_to_dict(new_got)
     return GotBase(**got_dict)
 
 @router.put("/got/{got_id}", status_code=status.HTTP_200_OK, response_model=GotBase)
 async def update_got( got: GotBase,got_id: int| None = None, got_repository: GotRepository = Depends(GotRepository), db: Session = Depends(get_db)) -> GotBase:
-    updated_got = await got_repository.update_got(db, got_id, got)
+    updated_got = await got_repository.update_got(db, got,got_id)
     if updated_got is None:
         raise HTTPException(status_code=404, detail="got not found")
     got_dict = model_to_dict(updated_got)

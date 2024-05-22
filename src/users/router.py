@@ -66,18 +66,18 @@ async def update_user(user_id: int,user_data: UserBase, user_repository: UsersRe
     return UserBase(**user_dict)
 
 @router.post("/users/addresses/{user_id}", response_model=UsersAdressesBase)
-async def create_new_user_address(adresse:UsersAdressesBase,city:CityBase,code_postal:CodePostalBase,got_repository:GotRepository= Depends(GotRepository),city_repository:CityRepository= Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),asso_33_repository: Asso_33Repository = Depends(Asso_33Repository),preference_ship_repository: PreferenceshipRepository = Depends(PreferenceshipRepository),
+async def create_new_user_address(authorize:bool,adresse:UsersAdressesBase,city:CityBase,code_postal:CodePostalBase,got_repository:GotRepository= Depends(GotRepository),city_repository:CityRepository= Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),asso_33_repository: Asso_33Repository = Depends(Asso_33Repository),preference_ship_repository: PreferenceshipRepository = Depends(PreferenceshipRepository),
  db: Session = Depends(get_db)) -> UsersAdressesBase:
-    db_address = await create_user_an_address(adresse,code_postal,city,got_repository,asso_33_repository,preference_ship_repository,city_repository,code_postal_repository,located_repository, user_adresse_repository,db)
+    db_address = await create_user_an_address(authorize,adresse,code_postal,city,got_repository,asso_33_repository,preference_ship_repository,city_repository,code_postal_repository,located_repository, user_adresse_repository,db)
     return db_address
 
 @router.put("/users/{adresses_id}/addresses", response_model=UsersAdressesBase)
-async def modify_user_address(user_id: int, addresses_id: int, adresse: UsersAdressesBase, adresse_type: AdresseTypeBase, code_postal: Optional[int] = None,city: Optional[str] = None,got_repository:GotRepository= Depends(GotRepository),city_repository:CityRepository= Depends(CityRepository), located_repository: LocatedRepository = Depends(LocatedRepository), code_postal_repository: CodePostalRepository = Depends(CodePostalRepository), user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
+async def modify_user_address(authorize:bool,user_id: int, addresses_id: int, adresse: UsersAdressesBase, adresse_type: AdresseTypeBase, code_postal: Optional[int] = None,city: Optional[str] = None,got_repository:GotRepository= Depends(GotRepository),city_repository:CityRepository= Depends(CityRepository), located_repository: LocatedRepository = Depends(LocatedRepository), code_postal_repository: CodePostalRepository = Depends(CodePostalRepository), user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
     code =await get_located_by_ids(addresses_id,located_repository,db)
     code_postal_unchange = code.Id_Code_Postal
     if not code_postal:
         code_postal=code_postal_unchange
-    db_address = await update_user_address(addresses_id,adresse,code_postal,city,got_repository,city_repository,code_postal_repository, user_adresse_repository,located_repository,db)
+    db_address = await update_user_address(authorize,addresses_id,adresse,code_postal,city,got_repository,city_repository,code_postal_repository, user_adresse_repository,located_repository,db)
     adresse_type = await adresse_type_repository.get_adressestypes_user(db, user_id)
     await update_adresse_type(adresse_type.Id_Adresse_Type,adresse_type,adresse_type_repository,db)
     return db_address

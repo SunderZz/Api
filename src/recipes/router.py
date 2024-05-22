@@ -70,7 +70,6 @@ async def create_recipes(recipes: RecipesBase, products_repository: ProductRepos
         ingredients_list = cleaned_ingredient.split()
         for ingredient_array in ingredients_list:
             ingredient = await get_product_id_by_name(ingredient_array, products_repository, db)
-            print(ingredient)
             for ingredient_obj in ingredient:
                 await create_found(FoundBase(Id_Recipes=new_recipes.Id_Recipes, Id_Product=ingredient_obj.Id_Product), found_repository, db)
     recipes_dict = model_to_dict(new_recipes) 
@@ -79,7 +78,6 @@ async def create_recipes(recipes: RecipesBase, products_repository: ProductRepos
 @router.put("/recipes/{recipes_id}", status_code=status.HTTP_200_OK, response_model=RecipesBase)
 async def update_recipes(recipes_id: int, recipes: RecipesBase,recipes_repository: RecipesRepository = Depends(RecipesRepository), db: Session = Depends(get_db))-> RecipesBase:
     updated_recipes = await recipes_repository.update_Recipes(db, recipes_id, recipes)
-    print(updated_recipes)
     if updated_recipes is None:
         raise HTTPException(status_code=404, detail="recipes not found")
     recipes_dict = model_to_dict(updated_recipes) 

@@ -5,8 +5,8 @@ class OrdersRepository:
     async def get_orders(self, db: Session)->list[Orders]:
         return db.query(Orders).all()
     
-    async def get_orders_query(self,db: Session, orders: int)->Orders:
-        return db.query(Orders).filter(Orders.Id_Orders == orders).first()
+    async def get_orders_query(self,db: Session, id_orders: int)->Orders:
+        return db.query(Orders).filter(Orders.Id_Orders == id_orders).first()
     
     async def create_orders(self, db: Session, orders: Orders)->Orders:
         db_orders = Orders(**orders.dict())

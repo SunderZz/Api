@@ -19,3 +19,11 @@ class PreferenceshipRepository:
                 setattr(db_preferenceship, key, value)
         db.commit()
         return db_preferenceship
+    
+    async def create_preference_ship(self,db: Session, preferenceship: Preferenceship) -> Preferenceship:
+        preferenceship_data = preferenceship.dict(by_alias=True)
+        db_address = Preferenceship(**preferenceship_data)
+        db.add(db_address)
+        db.commit()
+        db.refresh(db_address)
+        return db_address

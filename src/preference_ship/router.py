@@ -1,6 +1,6 @@
 import users.models as models
 from typing import Annotated
-from .schema import PreferenceshipBase
+from .schema import PreferenceshipBase,PreferenceshipIdBase
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 import main as get_db
@@ -37,6 +37,8 @@ async def update_preferenceship(preferenceship_id: int, preferenceship: Preferen
     return PreferenceshipBase(**preferenceship_image_dict)
     
 
-#get preference_ship based on id order
-#put preference_ship
-#post preference_ship
+@router.post("/preference_ship/", status_code=status.HTTP_201_CREATED, response_model=PreferenceshipIdBase)
+async def create_preference_ship(preference_ship: PreferenceshipBase,preference_ship_repository: PreferenceshipRepository = Depends(PreferenceshipRepository), db: Session = Depends(get_db))-> PreferenceshipIdBase:
+    new_preference_ship = await preference_ship_repository.create_preferenceship(db, preference_ship)
+    preference_ship_dict = model_to_dict(new_preference_ship) 
+    return PreferenceshipIdBase(**preference_ship_dict)

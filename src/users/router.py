@@ -6,7 +6,8 @@ from fastapi import APIRouter,  Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal
 from .repository import UsersRepository
-from common import model_to_dict
+from common import model_to_dict, validate_password
+from common import generate_token
 
 from adresse_types.router import create_adresses_types, update_adresse_type, get_adresses_type_user,update_adresse_type
 from adresse_types.schema import AdresseTypeBase
@@ -23,6 +24,13 @@ from got_3.repository import GotRepository
 from city.repository import CityRepository
 from preference_ship.repository import PreferenceshipRepository
 from asso_33.repository import Asso_33Repository
+from customers.router import create_customer
+from customers.schema import CustomersBase
+from customers.repository import CustomersRepository
+from producers.router import create_producer
+from producers.schema import ProducersBase
+from producers.repository import ProducersRepository
+
 def get_db():
     db = SessionLocal()
     try: 
@@ -50,11 +58,29 @@ async def get_users(user_repository: UsersRepository = Depends(UsersRepository),
     users_dict = [model_to_dict(user) for user in users]
     return [UserBase(**user_dict) for user_dict in users_dict]
 
-    
+@router.post("/users/login", response_model=UserBase)
+async def login_user(
+    mail: str,
+    password: str,
+    user_repository: UsersRepository = Depends(UsersRepository),
+    db: Session = Depends(get_db)
+) -> UserBase:
+    user = await user_repository.authenticate_user(db, mail, password)
+    if user is None:
+        raise HTTPException(status_code=404, detail="Invalid credentials")
+    user_dict = model_to_dict(user)
+    return UserBase(**user_dict)
+
 @router.post("/users/", response_model=UserBase)
-async def create_user(user: UserBase,user_repository: UsersRepository = Depends(UsersRepository), db: Session = Depends(get_db))->UserBase:
+async def create_user_type(user: UserBase,documents:str |None=None,descriptions:str |None=None,user_repository: UsersRepository = Depends(UsersRepository),customers_repository: CustomersRepository = Depends(CustomersRepository),producers_repository: ProducersRepository = Depends(ProducersRepository), db: Session = Depends(get_db))->UserBase:
+    if not validate_password(user.Password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter, two digits, and one special character.")
     user_post = await user_repository.create_user(db, user)
-    user_dict =model_to_dict(user_post)
+    if documents and descriptions:
+        await create_producer(ProducersBase(Id_Users=user_post.Id_Users,description=descriptions,Document=documents),producers_repository,db)
+    else:
+        await create_customer(CustomersBase(Id_Users=user_post.Id_Users),customers_repository,db)
+    user_dict = model_to_dict(user_post)
     return UserBase(**user_dict)
 
 @router.put("/users/{user_id}", response_model=UserBase)

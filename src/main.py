@@ -3,7 +3,7 @@ from typing import Annotated
 from database import AsyncSessionLocal
 from sqlalchemy.orm import Session
 from starlette.types import ASGIApp
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
 from admin.router import router as admin_router
@@ -47,6 +47,16 @@ app = FastAPI(
     title="API",
 )
 
+origins = [
+    "http://localhost:8080",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 fallback_url_router = APIRouter(tags=["fallback_url"])
 CAPACITOR_ORIGIN = "http://localhost"
 

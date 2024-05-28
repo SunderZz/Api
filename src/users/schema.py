@@ -6,3 +6,4 @@ class UserBase(BaseModel):
     Mail: str
     Password: str
     active: bool
+    token: str

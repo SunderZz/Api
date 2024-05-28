@@ -31,12 +31,13 @@ async def get_locateds(located_repository: LocatedRepository = Depends(LocatedRe
 async def get_located_by_ids(located_id: int, located_repository: LocatedRepository = Depends(LocatedRepository), db: Session = Depends(get_db)) -> LocatedBase:
     located = await located_repository.get_located_by_id(db, located_id)
     if located is None:
-        raise HTTPException(status_code=404, detail="located not found")
+        return None
     return LocatedBase(**model_to_dict(located))
 
 @router.post("/located/", status_code=status.HTTP_201_CREATED, response_model=LocatedBase)
 async def create_located(located: LocatedBase, located_repository: LocatedRepository = Depends(LocatedRepository), db: Session = Depends(get_db)) -> LocatedBase:
     id_code= located.Id_Users_adresses
+    print(id_code)
     existing_code_postal = await get_located_by_ids(id_code,located_repository,db)
     if existing_code_postal is not None:
         return existing_code_postal

@@ -10,6 +10,8 @@ class Users(Base):
     Name = Column(String(50), nullable=False)
     Mail = Column(String(50), nullable=False)
     Password = Column(String(50), nullable=False)
+    token = Column(String(128), unique=True)
+    token_creation_date = Column(TIMESTAMP, default=func.now())
     Creation_date = Column(TIMESTAMP, default=func.now())
     Modification_date = Column(TIMESTAMP)
     active = Column(Boolean, nullable=False)

@@ -1,31 +1,35 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Recipes
+from sqlalchemy.future import select
 
 class RecipesRepository:
-    async def get_Recipes(self, db: Session)->Recipes:
-        return db.query(Recipes).all()
+    async def get_Recipes(self, db: AsyncSession) -> list[Recipes]:
+        result = await db.execute(select(Recipes))
+        return result.scalars().all()
     
-    async def get_Recipes_query(self,db: Session, ingredient: int)->Recipes:
-        return db.query(Recipes).filter(Recipes.ingredient == ingredient).first()
+    async def get_Recipes_query(self, db: AsyncSession, ingredient: int) -> Recipes:
+        result = await db.execute(select(Recipes).filter(Recipes.ingredient == ingredient))
+        return result.scalar_one_or_none()
     
-    async def create_Recipes(self, db: Session, recipes: Recipes)->Recipes:
+    async def create_Recipes(self, db: AsyncSession, recipes: Recipes) -> Recipes:
         db_recipes = Recipes(**recipes.dict())
         db.add(db_recipes)
-        db.commit()
-        db.refresh(db_recipes)
+        await db.commit()
+        await db.refresh(db_recipes)
         return db_recipes
 
-    async def update_Recipes(self, db: Session,recipes_id: int, recipes_data: Recipes)->Recipes:
-        db_recipes = db.query(Recipes).filter(Recipes.Id_Recipes == recipes_id).first()
+    async def update_Recipes(self, db: AsyncSession, recipes_id: int, recipes_data: Recipes) -> Recipes:
+        result = await db.execute(select(Recipes).filter(Recipes.Id_Recipes == recipes_id))
+        db_recipes = result.scalar_one_or_none()
         if db_recipes is None:
             return None
         for key, value in recipes_data.__dict__.items():
             if hasattr(db_recipes, key) and value is not None:
                 setattr(db_recipes, key, value)
-        db.commit()
+        await db.commit()
         return db_recipes   
     
-    async def find_recipe_by_query(self, db: Session, query: str) -> list[Recipes] | None:
+    async def find_recipe_by_query(self, db: AsyncSession, query: str) -> list[Recipes] | None:
         all_recipes = await self.get_Recipes(db)
         matching_recipes = []
         

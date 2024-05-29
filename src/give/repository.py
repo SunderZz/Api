@@ -1,25 +1,30 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Give
+from sqlalchemy.future import select
 
 class GiveRepository:
 
-    async def create_give(self,db: Session, give: Give)->Give:
+    async def create_give(self, db: AsyncSession, give: Give) -> Give:
         db_given = Give(**give.dict())
         db.add(db_given)
-        db.commit()
-        db.refresh(db_given)
+        await db.commit()
+        await db.refresh(db_given)
         return db_given
 
-    async def get_give(self,db: Session)->Give:
-        return db.query(Give).all()
+    async def get_give(self, db: AsyncSession) -> list[Give]:
+        result = await db.execute(select(Give))
+        return result.scalars().all()
 
-    async def get_give_by_id(self,db: Session, id: int)->Give:
-        return db.query(Give).filter(Give.Id_Product == id).first()
+    async def get_give_by_id(self, db: AsyncSession, id: int) -> Give:
+        result = await db.execute(select(Give).filter(Give.Id_Product == id))
+        return result.scalar_one_or_none()
 
-    async def update_give(self,db: Session, id: int, give: Give)->Give:
-        db_given = db.query(Give).filter(Give.Id_Product == id).first()
-        for key, value in give.dict().items():
-            setattr(db_given, key, value)
-        db.commit()
-        db.refresh(db_given)
+    async def update_give(self, db: AsyncSession, id: int, give: Give) -> Give:
+        result = await db.execute(select(Give).filter(Give.Id_Product == id))
+        db_given = result.scalar_one_or_none()
+        if db_given:
+            for key, value in give.dict().items():
+                setattr(db_given, key, value)
+            await db.commit()
+            await db.refresh(db_given)
         return db_given

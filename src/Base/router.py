@@ -4,22 +4,13 @@ import json
 import users.models as models
 from typing import Annotated
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
-import main as get_db
-from database import engine, SessionLocal
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import get_db
+from database import engine2, AsyncSessionLocal
 
-def get_db():
-    db = SessionLocal
-    try: 
-        yield db
-    finally:
-        db.close_all()
 
 router = APIRouter(tags=["health"])
 
-models.Base.metadata.create_all(bind=engine)
-
-db_dependency= Annotated[Session, Depends(get_db)]
 
 send_url = "http://api.ipstack.com/check?access_key=e6b90ef1b887acd19f5921c37c45c00e"
 geo_req = requests.get(send_url)

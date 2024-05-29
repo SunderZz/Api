@@ -1,13 +1,15 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Notice
+from sqlalchemy.future import select
 
 class NoticeRepository:
-    async def get_notice(self, db: Session)->list[Notice]:
-        return db.query(Notice).all()
+    async def get_notice(self, db: AsyncSession) -> list[Notice]:
+        result = await db.execute(select(Notice))
+        return result.scalars().all()
     
-    async def create_notice(self, db: Session, notice: Notice)->Notice:
+    async def create_notice(self, db: AsyncSession, notice: Notice) -> Notice:
         db_notice = Notice(**notice.dict())
         db.add(db_notice)
-        db.commit()
-        db.refresh(db_notice)
+        await db.commit()
+        await db.refresh(db_notice)
         return db_notice

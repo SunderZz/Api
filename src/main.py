@@ -1,16 +1,14 @@
 from fastapi import APIRouter, FastAPI, Depends
 from typing import Annotated
 from database import AsyncSessionLocal
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.types import ASGIApp
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-
 from admin.router import router as admin_router
 from adresse_types.router import router as adresse_types_router
 from asso_33.router import router as asso_33_router
 from asso_34.router import router as asso_34_router
-from Base.router import router as base_router
 from city.router import router as city_router
 from carry_on.router import router as carry_on_router
 from choose.router import router as choose_router
@@ -57,26 +55,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-fallback_url_router = APIRouter(tags=["fallback_url"])
-CAPACITOR_ORIGIN = "http://localhost"
 
-
-class ContentTypeMiddleware:
-    def __init__(self, app: ASGIApp, default: str):
-        self.app = app
-        self.default = default
-
-
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
 
-db_dependency= Annotated[Session, Depends(get_db)]
-
-
-
-app.add_middleware(GZipMiddleware, minimum_size=1000)
+db_dependency = Annotated[AsyncSession, Depends(get_db)]
 
 app.include_router(admin_router)
 app.include_router(adresse_types_router)
@@ -113,4 +99,7 @@ app.include_router(tva_router)
 app.include_router(unit_router)
 app.include_router(users_router)
 app.include_router(users_adresses_router)
-app.include_router(base_router)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

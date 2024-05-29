@@ -1,14 +1,14 @@
 from datetime import datetime
 from fastapi import HTTPException
 import users_adresses.models as models
-import main as get_db
+from database import get_db
 import requests
 import json
 from typing import Annotated, Optional
 from .schema import UsersAdressesBase
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from database import engine, SessionLocal
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import engine2, AsyncSessionLocal
 from .repository import UsersAdressesRepository
 from common import model_to_dict, url
 
@@ -31,22 +31,10 @@ from preference_ship.router import create_preference_ship
 from preference_ship.schema import PreferenceshipBase
 from preference_ship.repository import PreferenceshipRepository
 
-def get_db():
-    db = SessionLocal()
-    try: 
-        yield db
-    finally:
-        db.close_all()
-
-router = APIRouter(tags=["users_adresses"])
-
-models.Base.metadata.create_all(bind=engine)
-
-db_dependency= Annotated[Session, Depends(get_db)]
-
+router = APIRouter(prefix="/users",tags=["users_adresses"])
 
 @router.get("/users/{adresse_id}/addresses", response_model=list[UsersAdressesBase])
-async def get_user_addresses(adresse_id: int,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db: Session = Depends(get_db))->list[UsersAdressesBase]:
+async def get_user_addresses(adresse_id: int,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db:AsyncSession = Depends(get_db))->list[UsersAdressesBase]:
     adresses = await user_adresse_repository.get_user_addresses(db, adresse_id)
     if not adresses:
         raise HTTPException(status_code=404, detail="addresses not found")
@@ -63,7 +51,7 @@ async def get_user_position(authorize: bool):
 
 
 @router.post("/users_adresses/addresses", response_model=UsersAdressesBase)
-async def create_user_an_address(authorize : bool,address: UsersAdressesBase,code_postal:CodePostalBase,city: CityBase,got_repository:GotRepository = Depends(GotRepository),asso_33_repository:Asso_33Repository = Depends(Asso_33Repository),preference_ship_repository:PreferenceshipRepository = Depends(PreferenceshipRepository),city_repositoy:CityRepository = Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
+async def create_user_an_address(authorize : bool,address: UsersAdressesBase,code_postal:CodePostalBase,city: CityBase,got_repository:GotRepository = Depends(GotRepository),asso_33_repository:Asso_33Repository = Depends(Asso_33Repository),preference_ship_repository:PreferenceshipRepository = Depends(PreferenceshipRepository),city_repositoy:CityRepository = Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db:AsyncSession = Depends(get_db)) -> UsersAdressesBase:
     acces = await get_user_position(authorize)
     Timestamp = datetime.now().isoformat()
     given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
@@ -86,7 +74,7 @@ async def create_user_an_address(authorize : bool,address: UsersAdressesBase,cod
 
 
 @router.put("/users/{user_id}/addresses/{address_id}", response_model=UsersAdressesBase)
-async def update_user_address(authorize:bool,address_id: int,address: UsersAdressesBase,postal_code: Optional[int] = None,city: Optional[str] = None,got_repository:GotRepository = Depends(GotRepository),city_repository:CityRepository = Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),located_repository:LocatedRepository= Depends(LocatedRepository), db: Session = Depends(get_db)) -> UsersAdressesBase:
+async def update_user_address(authorize:bool,address_id: int,address: UsersAdressesBase,postal_code: Optional[int] = None,city: Optional[str] = None,got_repository:GotRepository = Depends(GotRepository),city_repository:CityRepository = Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),located_repository:LocatedRepository= Depends(LocatedRepository), db:AsyncSession = Depends(get_db)) -> UsersAdressesBase:
     acces = await get_user_position(authorize)
     Timestamp = datetime.now().isoformat()
     given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()

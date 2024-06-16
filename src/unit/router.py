@@ -13,8 +13,8 @@ router = APIRouter(tags=["unit"])
 @router.get("/unit/", status_code=status.HTTP_200_OK, response_model=UnitBase)
 async def get_units(unit_repository: UnitRepository = Depends(UnitRepository),db:AsyncSession = Depends(get_db))-> UnitBase:
     units = await unit_repository.get_units(db)
-    unit_dict = model_to_dict(units) 
-    return UnitBase(**unit_dict)
+    units_dict = [model_to_dict(unit) for unit in units]
+    return [UnitBase(**unit_dict) for unit_dict in units_dict]
 
 
 @router.post("/unit/", status_code=status.HTTP_201_CREATED, response_model=UnitIdBase)

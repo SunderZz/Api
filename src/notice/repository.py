@@ -13,3 +13,7 @@ class NoticeRepository:
         await db.commit()
         await db.refresh(db_notice)
         return db_notice
+
+    async def get_notice_by_id(self, db: AsyncSession, notice: int) -> list[Notice]| Notice | None:
+        result = await db.execute(select(Notice).filter(Notice.Id_Notice == notice))
+        return result.scalars().all()

@@ -18,6 +18,10 @@ class GivenRepository:
     async def get_given_by_id(self, db: AsyncSession, id: int) -> Given:
         result = await db.execute(select(Given).filter(Given.Id_Notice == id))
         return result.scalar_one_or_none()
+    
+    async def get_notice_by_product(self, db: AsyncSession, product: int) -> list[Given]| Given | None:
+        result = await db.execute(select(Given).filter(Given.Id_Product == product))
+        return result.scalars().all()
 
     async def update_given(self, db: AsyncSession, id: int, given: Given) -> Given:
         result = await db.execute(select(Given).filter(Given.Id_Notice == id))

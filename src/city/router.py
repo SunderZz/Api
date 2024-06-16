@@ -44,11 +44,16 @@ async def get_city_with_ids(city: int, city_repository: CityRepository = Depends
     return CityBase(**city_dict)
 
 
-@router.post("/city/", status_code=status.HTTP_201_CREATED, response_model=CityBase)
-async def create_city(city: CityBase,city_repository: CityRepository = Depends(CityRepository), db:AsyncSession = Depends(get_db))-> CityBase:
+@router.post("/city/", status_code=status.HTTP_201_CREATED, response_model=CityIdBase)
+async def create_city(city: CityBase,city_repository: CityRepository = Depends(CityRepository), db:AsyncSession = Depends(get_db))-> CityIdBase:
+    existing_city = await city_repository.get_city_by_name(db, city.Name)
+    if existing_city:
+        city_dict = model_to_dict(existing_city)
+        return CityIdBase(**city_dict)
+    
     new_city = await city_repository.create_city(db, city)
-    city_dict = model_to_dict(new_city) 
-    return CityBase(**city_dict)
+    city_dict = model_to_dict(new_city)
+    return CityIdBase(**city_dict)
 
 @router.put("/city/{city_id}", status_code=status.HTTP_200_OK, response_model=CityBase)
 async def update_city(city_id: int, city: CityBase,city_repository: CityRepository = Depends(CityRepository), db:AsyncSession = Depends(get_db))-> CityBase:

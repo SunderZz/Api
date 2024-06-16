@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Linede
 from sqlalchemy.future import select
+from sqlalchemy import delete
 
 class LinedeRepository:
 
@@ -10,6 +11,11 @@ class LinedeRepository:
         await db.commit()
         await db.refresh(db_linede)
         return db_linede
+    
+    async def delete_linede(self, db: AsyncSession, order_id: int, product_id: int) -> None:
+        stmt = delete(Linede).where(Linede.Id_Orders == order_id, Linede.Id_Product == product_id)
+        await db.execute(stmt)
+        await db.commit()
 
     async def get_linede(self, db: AsyncSession) -> list[Linede]:
         result = await db.execute(select(Linede))
@@ -27,8 +33,8 @@ class LinedeRepository:
         
         return linedes[0]
 
-    async def update_linede(self, db: AsyncSession, id: int, linede: Linede) -> Linede:
-        result = await db.execute(select(Linede).filter(Linede.Id_Orders == id))
+    async def update_linede(self, db: AsyncSession, id_orders: int, id_product: int, linede: Linede) -> Linede:
+        result = await db.execute(select(Linede).filter(Linede.Id_Orders == id_orders, Linede.Id_Product == id_product))
         db_linede = result.scalar_one_or_none()
         if db_linede:
             for key, value in linede.dict().items():

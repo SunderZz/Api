@@ -8,6 +8,10 @@ class ProducersRepository:
         return result.scalars().all()
     
     async def get_producers_query(self, db: AsyncSession, producers: int) -> Producers:
+        result = await db.execute(select(Producers).filter(Producers.Id_Users == producers))
+        return result.scalar_one_or_none()
+    
+    async def get_user_query(self, db: AsyncSession, producers: int) -> Producers:
         result = await db.execute(select(Producers).filter(Producers.Id_Producers == producers))
         return result.scalar_one_or_none()
 

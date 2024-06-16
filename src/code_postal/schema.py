@@ -5,3 +5,4 @@ class CodePostalBase(BaseModel):
 
 class CodePostalIdBase(BaseModel):
     Id_Code_Postal: int
+    code_postal: int

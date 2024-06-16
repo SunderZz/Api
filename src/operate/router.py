@@ -28,7 +28,7 @@ async def get_operates(operate_repository: OperateRepository = Depends(OperateRe
 async def get_operate_by_id(operate_id: int, operate_repository: OperateRepository = Depends(OperateRepository), db:AsyncSession = Depends(get_db)) -> OperateBase:
     operate = await operate_repository.get_operate_by_id(db, operate_id)
     if operate is None:
-        raise HTTPException(status_code=404, detail="operate not found")
+        return None
     return OperateBase(**model_to_dict(operate))
 
 @router.post("/operate/", status_code=status.HTTP_201_CREATED, response_model=OperateBase)

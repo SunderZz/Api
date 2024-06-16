@@ -30,7 +30,7 @@ async def get_got_by_id(got_id: int, got_repository: GotRepository = Depends(Got
 async def create_got(got: GotBase, got_repository: GotRepository = Depends(GotRepository), db:AsyncSession = Depends(get_db)) -> GotBase:
     id_code= got.Id_Code_Postal
     existing_code_postal = await get_got_by_id(id_code,got_repository,db)
-    if len(existing_code_postal) == 0 :
+    if existing_code_postal :
         return existing_code_postal
     new_got = await got_repository.create_got(db, got)
     got_dict = model_to_dict(new_got)

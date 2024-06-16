@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 class UnitRepository:
     async def get_units(self, db: AsyncSession) -> Unit:
         result = await db.execute(select(Unit))
-        return result.scalar_one_or_none()
+        return result.scalars().all()
     
     async def create_unit(self, db: AsyncSession, unit: Unit) -> Unit:
         db_unit = Unit(**unit.dict())

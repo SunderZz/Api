@@ -18,6 +18,11 @@ class GiveRepository:
     async def get_give_by_id(self, db: AsyncSession, id: int) -> Give:
         result = await db.execute(select(Give).filter(Give.Id_Product == id))
         return result.scalar_one_or_none()
+    
+    async def get_give_by_id_producers(self, db: AsyncSession, id: int) -> Give:
+        result = await db.execute(select(Give).filter(Give.Id_Producers == id))
+        return result.scalars().all()
+
 
     async def update_give(self, db: AsyncSession, id: int, give: Give) -> Give:
         result = await db.execute(select(Give).filter(Give.Id_Product == id))

@@ -35,6 +35,10 @@ async def create_linede(linede: LinedeBase, linede_repository: LinedeRepository 
     linede_dict = model_to_dict(new_linede)
     return LinedeBase(**linede_dict)
 
+@router.delete("/linede/{order_id}/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_linede(order_id: int, product_id: int, linede_repository: LinedeRepository = Depends(LinedeRepository), db: AsyncSession = Depends(get_db)) -> None:
+    await linede_repository.delete_linede(db, order_id, product_id)
+    
 @router.post("/linede/orders", status_code=status.HTTP_201_CREATED, response_model=LinedeBase | list[LinedeBase])
 async def create_linede_for_order(linede: LinedeBase |list[LinedeBase], linede_repository: LinedeRepository = Depends(LinedeRepository), db:AsyncSession = Depends(get_db)) -> LinedeBase | list[LinedeBase]:
     new_linede = await linede_repository.add_products_to_order(db,linede)
@@ -45,9 +49,9 @@ async def create_linede_for_order(linede: LinedeBase |list[LinedeBase], linede_r
         linede_dict = model_to_dict(new_linede)
         return LinedeBase(**linede_dict)
 
-@router.put("/linede/{linede_id}", status_code=status.HTTP_200_OK, response_model=LinedeBase)
-async def update_linede(linede_id: int, linede: LinedeBase, linede_repository: LinedeRepository = Depends(LinedeRepository), db:AsyncSession = Depends(get_db)) -> LinedeBase:
-    updated_linede = await linede_repository.update_linede(db, linede_id, linede)
+@router.put("/linede/{id_orders}/{id_product}", status_code=status.HTTP_200_OK, response_model=LinedeBase)
+async def update_linede(id_orders: int, id_product: int, linede: LinedeBase, linede_repository: LinedeRepository = Depends(LinedeRepository), db: AsyncSession = Depends(get_db)) -> LinedeBase:
+    updated_linede = await linede_repository.update_linede(db, id_orders, id_product, linede)
     if updated_linede is None:
         raise HTTPException(status_code=404, detail="linede not found")
     linede_dict = model_to_dict(updated_linede)

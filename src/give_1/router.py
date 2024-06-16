@@ -1,4 +1,4 @@
-import season.models as models
+import give_1.models as models
 from database import get_db
 from typing import Annotated
 from .schema import Give_1Base
@@ -25,7 +25,7 @@ async def get_Give_1_by_id(Give_1_id: int, Give_1_repository: Give_1Repository =
     return Give_1Base(**model_to_dict(Give_1))
 
 @router.post("/Give_1/", status_code=status.HTTP_201_CREATED, response_model=Give_1Base)
-async def create_Give_1(Give_1: Give_1Base, Give_1_repository: Give_1Repository = Depends(Give_1Repository), db:AsyncSession = Depends(get_db)) -> Give_1Base:
+async def create_Give_notice(Give_1: Give_1Base, Give_1_repository: Give_1Repository = Depends(Give_1Repository), db:AsyncSession = Depends(get_db)) -> Give_1Base:
     new_Give_1 = await Give_1_repository.create_give_1(db, Give_1)
     Give_1_dict = model_to_dict(new_Give_1)
     return Give_1Base(**Give_1_dict)

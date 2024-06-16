@@ -8,7 +8,7 @@ class CustomersRepository:
         return result.scalars().all()
     
     async def get_customers_query(self, db: AsyncSession, customers: int) -> Customers:
-        result = await db.execute(select(Customers).filter(Customers.Id_Casual == customers))
+        result = await db.execute(select(Customers).filter(Customers.Id_Users == customers))
         return result.scalar_one_or_none()
 
     async def create_customers(self, db: AsyncSession, customers: Customers) -> Customers:

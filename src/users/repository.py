@@ -2,25 +2,40 @@ import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from .models import Users
+from .schema import UserCreate
 from passlib.context import CryptContext
 from common import generate_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UsersRepository:
-    async def get_user(self, db: AsyncSession, user_id: int) -> Users:
+    def map_to_sqlalchemy(self, user_create: UserCreate) -> Users:
+            return Users(
+                F_Name=user_create.F_Name,
+                Name=user_create.Name,
+                Mail=user_create.Mail,
+                Password=user_create.Password,
+                active=user_create.active
+            )
+    
+    async def get_user(self, db: AsyncSession, user_id: str) -> Users:
         result = await db.execute(select(Users).filter(Users.Id_Users == user_id))
         return result.scalar_one_or_none()
     
     async def get_user_mail(self, db: AsyncSession, mail: str) -> Users:
         result = await db.execute(select(Users).filter(Users.Mail == mail))
         return result.scalar_one_or_none()
+    
+    async def get_user_token(self, db: AsyncSession, token: str) -> Users:
+        result = await db.execute(select(Users).filter(Users.token == token))
+        return result.scalar_one_or_none()
 
     async def get_all_users(self, db: AsyncSession) -> list[Users]:
         result = await db.execute(select(Users))
         return result.scalars().all()
 
-    async def create_user(self, db: AsyncSession, user: Users) -> Users:
+    async def create_user(self, db: AsyncSession, user_create: UserCreate) -> Users:
+        user = self.map_to_sqlalchemy(user_create)
         hashed_password = pwd_context.hash(user.Password)
         user.Password = hashed_password
         db.add(user)
@@ -28,16 +43,24 @@ class UsersRepository:
         await db.refresh(user)
         return user
 
-    async def update_user(self, db: AsyncSession, user_id: int, user_data: Users) -> Users:
+    async def update_user(self, db: AsyncSession, user_id: int, user_data: UserCreate) -> Users:
         result = await db.execute(select(Users).filter(Users.Id_Users == user_id))
         db_user = result.scalar_one_or_none()
         if db_user is None:
             return None
+
         for key, value in user_data.__dict__.items():
-            setattr(db_user, key, value)
+            if value is not None:
+                if key == "Password":
+                    hashed_password = pwd_context.hash(value)
+                    setattr(db_user, key, hashed_password)
+                else:
+                    setattr(db_user, key, value)
+        
         await db.commit()
         await db.refresh(db_user)
         return db_user
+
     
     async def authenticate_user(self, db: AsyncSession, mail: str, password: str):
         user = await self.get_user_mail(db, mail)

@@ -25,7 +25,7 @@ async def get_customers(customers_repository: CustomersRepository = Depends(Cust
     return [CustomersBase(**customers_dict) for customers_dict in customers_list]
 
 
-@router.get("/customers/{customers}", response_model=CustomersBase)
+@router.get("/customers_by_id", response_model=CustomersBase)
 async def get_customer_value(customers: int, customers_repository: CustomersRepository = Depends(CustomersRepository), db:AsyncSession = Depends(get_db)) -> CustomersBase:
     value = await customers_repository.get_customers_query(db, customers)
     if value is None:

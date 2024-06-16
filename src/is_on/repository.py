@@ -18,6 +18,10 @@ class IsOnRepository:
     async def get_is_on_by_id(self, db: AsyncSession, id: int) -> list[Is_On]:
         result = await db.execute(select(Is_On).filter(Is_On.Id_Season == id))
         return result.scalars().all()
+    
+    async def get_season_with_produt(self, db: AsyncSession, id: int) -> Is_On:
+        result = await db.execute(select(Is_On).filter(Is_On.Id_Product == id))
+        return result.scalar_one_or_none()
 
     async def update_is_on(self, db: AsyncSession, id: int, is_On: Is_On) -> Is_On:
         result = await db.execute(select(Is_On).filter(Is_On.Id_Product == id))

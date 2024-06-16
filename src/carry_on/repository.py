@@ -15,7 +15,7 @@ class CarryOnRepository:
         result = await db.execute(select(CarryOn))
         return result.scalars().all()
 
-    async def get_carry_on_by_id(self, db: AsyncSession, id: int) -> CarryOn:
+    async def get_carry_by_id(self, db: AsyncSession, id: int) -> CarryOn:
         result = await db.execute(select(CarryOn).filter(CarryOn.Id_Producers == id))
         return result.scalar_one_or_none()
 

@@ -7,6 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database import engine2, AsyncSessionLocal
 from .repository import IsOnRepository
 from common import model_to_dict
+from season.schema import SeasonRetrieveBase
+from season.router import get_seasons_with_product_id
+from season.repository import SeasonRepository
+
 
 router = APIRouter(tags=["is_on"])
 
@@ -26,6 +30,16 @@ async def get_is_on_by_id(is_on_id: int, is_on_repository: IsOnRepository = Depe
         return [IsOnBase(**is_on_dict) for is_on_dict in is_ons_list]
     else:
         return IsOnBase(**model_to_dict(is_on))
+    
+@router.get("/get_seasons_with_product", status_code=status.HTTP_200_OK, response_model=SeasonRetrieveBase)
+async def get_seasons_with_product(is_on_id: int, is_on_repository: IsOnRepository = Depends(IsOnRepository),season_repository: SeasonRepository = Depends(SeasonRepository), db:AsyncSession = Depends(get_db)) -> SeasonRetrieveBase:
+    is_on = await is_on_repository.get_season_with_produt(db, is_on_id)
+    if is_on is None:
+        raise HTTPException(status_code=404, detail="is_on not found")
+    result = IsOnBase(**model_to_dict(is_on))
+    id_season = result.Id_Season
+    season = await get_seasons_with_product_id(id_season,season_repository,db)
+    return season
 
 @router.post("/is_on/", status_code=status.HTTP_201_CREATED, response_model=IsOnBase)
 async def create_is_on(is_on: IsOnBase, is_on_repository: IsOnRepository = Depends(IsOnRepository), db:AsyncSession = Depends(get_db)) -> IsOnBase:

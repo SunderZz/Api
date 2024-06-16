@@ -23,6 +23,7 @@ from is_on.router import router as ison_router
 from linede.router import router as linede_router
 from located.router import router as located_router
 from manage.router import router as manage_router
+from méteo.router import router as méteo_router
 from notice.router import router as notice_router
 from operate.router import router as operate_router
 from orders.router import router as orders_router
@@ -41,12 +42,17 @@ from unit.router import router as unit_router
 from users.router import router as users_router
 from users_adresses.router import router as users_adresses_router
 
+
 app = FastAPI(
     title="API",
 )
 
 origins = [
     "http://localhost:8080",
+    "http://localhost:5173",
+    "http://localhost:8081",
+    "https://meteo.francetvinfo.fr/previsions-meteo-outremer/la-reunion",
+    "exp://192.168.1.14:8081",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -82,6 +88,7 @@ app.include_router(ison_router)
 app.include_router(linede_router)
 app.include_router(located_router)
 app.include_router(manage_router)
+app.include_router(méteo_router)
 app.include_router(notice_router)
 app.include_router(operate_router)
 app.include_router(orders_router)

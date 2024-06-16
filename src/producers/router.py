@@ -30,11 +30,20 @@ async def get_producers(produit_repository: ProducersRepository = Depends(Produc
     return [ProducersBase(**producer_dict) for producer_dict in producers_list]
 
 
-@router.get("/producers/{producers}", response_model=ProducersBase)
-async def get_producer_value(producers: str, producers_repository: ProducersRepository = Depends(ProducersRepository), db:AsyncSession = Depends(get_db)) -> ProducersBase:
+@router.get("/producers/{producers}", response_model=ProducersBase |None)
+async def get_producer_value(producers: str, producers_repository: ProducersRepository = Depends(ProducersRepository), db:AsyncSession = Depends(get_db)) -> ProducersBase |None:
     value = await producers_repository.get_producers_query(db, producers)
     if value is None:
-        raise HTTPException(status_code=404, detail="producer not found or attribute not found")
+        return None
+    producer_dict = model_to_dict(value)
+        
+    return ProducersBase(**producer_dict)
+
+@router.get("/producers_user", response_model=ProducersBase |None)
+async def get_producer_in_user(producers: str, producers_repository: ProducersRepository = Depends(ProducersRepository), db:AsyncSession = Depends(get_db)) -> ProducersBase |None:
+    value = await producers_repository.get_user_query(db, producers)
+    if value is None:
+        return None
     producer_dict = model_to_dict(value)
         
     return ProducersBase(**producer_dict)

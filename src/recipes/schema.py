@@ -5,3 +5,4 @@ class RecipesBase(BaseModel):
     Title: str |None = None
     Recipe: str |None = None
     ingredient: str |None = None
+    Id_Recipes: int

@@ -18,11 +18,13 @@ async def get_tva(tva_id: int, tva_repository: TvaRepository = Depends(TvaReposi
     tva_dict = model_to_dict(tva) 
     return TvaBase(**tva_dict)
 
-@router.get("/tva/", status_code=status.HTTP_200_OK, response_model=list[TvaBase])
-async def get_all_tva(tva_repository: TvaRepository = Depends(TvaRepository),db:AsyncSession = Depends(get_db))-> list[TvaBase]:
-    Tva = await tva_repository.get_all_tva(db)
-    tvas_list = [model_to_dict(tvas) for tvas in Tva]
-    return [TvaBase(**tva_dict) for tva_dict in tvas_list]
+@router.get("/tva_name/{tva_id}", response_model=TvaBase)
+async def get_tva_with_name(tva_id: str, tva_repository: TvaRepository = Depends(TvaRepository), db:AsyncSession = Depends(get_db))->TvaBase:
+    tva = await tva_repository.get_tva_by_name(db, tva_id)
+    if tva is None:
+        raise HTTPException(status_code=404, detail="Tva not found")
+    tva_dict = model_to_dict(tva) 
+    return TvaBase(**tva_dict)
 
 @router.get("/tva/calculate/{tva_name}", response_model=TvaCalculationResult)
 async def calculate_tva(tva_name: str, price: float, db:AsyncSession = Depends(get_db), tva_repository: TvaRepository = Depends(TvaRepository))->TvaCalculationResult:
@@ -30,6 +32,13 @@ async def calculate_tva(tva_name: str, price: float, db:AsyncSession = Depends(g
     if tva_value is None:
         raise HTTPException(status_code=404, detail="Tva not found")
     return TvaCalculationResult(value=tva_value)
+
+@router.get("/tva", status_code=status.HTTP_200_OK, response_model=list[TvaBase])
+async def get_all_tva(tva_repository: TvaRepository = Depends(TvaRepository),db:AsyncSession = Depends(get_db))-> list[TvaBase]:
+    Tva = await tva_repository.get_all_tva(db)
+    tvas_list = [model_to_dict(tvas) for tvas in Tva]
+    return [TvaBase(**tva_dict) for tva_dict in tvas_list]
+
 
 @router.put("/tva/{tva_id}", response_model=TvaBase)
 async def update_tva(tva_id: int, tva: TvaBase,  tva_repository: TvaRepository = Depends(TvaRepository), db:AsyncSession = Depends(get_db))->TvaBase:

@@ -10,10 +10,10 @@ from common import model_to_dict
 from .repository import AdminRepository
 from users.schema import UserBase
 from products.schema import ProductBase
-from operate.router import create_operate,update_operate
+from operate.router import create_operate, get_operate_by_id
 from operate.schema import OperateBase
 from operate.repository import OperateRepository
-from carry_on.router import create_carry_on,update_carry_on
+from carry_on.router import create_carry_on,get_carry_onose_by_id
 from carry_on.schema import CarryOnBase
 from carry_on.repository import CarryOnRepository
 from manage.router import create_manage,update_manage
@@ -25,7 +25,12 @@ from recipes.repository import RecipesRepository
 from redac.router import create_redact,update_redact
 from redac.schema import RedactBase
 from redac.repository import RedactRepository
-
+from customers.router import get_customer_value
+from customers.schema import CustomersBase
+from customers.repository import CustomersRepository
+from producers.router import get_producer_value
+from producers.schema import ProducersBase
+from producers.repository import ProducersRepository
 
 router = APIRouter(tags=["admin"])
 
@@ -61,39 +66,41 @@ async def update_admin(admin_id: int, admin: AdminBase,admin_repository: AdminRe
     admin_dict = model_to_dict(updated_admin) 
     return AdminBase(**admin_dict)
 
-@router.put("/admin/{product_id}/active", status_code=status.HTTP_200_OK,response_model=ProductBase,summary="Modify product")
+@router.put("/admin/products/active", status_code=status.HTTP_200_OK,response_model=ProductBase,summary="Modify product")
 async def update_product_active_status(product_id: int,admin_id: int, active: bool, repository: AdminRepository = Depends(AdminRepository),manage_repository: ManageRepository = Depends(ManageRepository), db: AsyncSession = Depends(get_db))->ProductBase:
     product = await repository.update_product_active_status(db, product_id, active)
     Timestamp = datetime.now().isoformat()
+    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
+
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
-    new_manage = await create_manage(ManageBase(Id_Admin=admin_id, Id_Product=product_id,Date_manage=Timestamp),product_id,manage_repository, db)
-    if not new_manage:
-        await update_manage(admin_id, ManageBase(Id_Admin=admin_id, Id_Product=product_id,Date_manage=Timestamp), manage_repository, db)
+    await create_manage(ManageBase(Id_Admin=admin_id, Id_Product=product_id,Date_manage=given_date_exact),product_id,manage_repository, db)
 
     product_dict = model_to_dict(product) 
     return ProductBase(**product_dict)
 
-@router.put("/admin/{casual_id}/active_state", status_code=status.HTTP_200_OK,response_model=UserBase,summary="Modify active state on casual")
-async def update_casual_active_status(casual_id: int,admin_id: int, active: bool, repository: AdminRepository = Depends(AdminRepository),operate_repository: OperateRepository = Depends(OperateRepository), db: AsyncSession = Depends(get_db))->UserBase:
-    user = await repository.modify_user_active_status(db, casual_id, active)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    new_operate = await create_operate(OperateBase(Id_Admin=admin_id, Id_Casual=casual_id),admin_id,operate_repository, db)
-    if not new_operate:
-        await update_operate(admin_id, OperateBase(Id_Admin=admin_id, Id_Casual=casual_id), operate_repository, db)
+@router.put("/admin/user/active_state", status_code=status.HTTP_200_OK,response_model=UserBase,summary="Modify active state on casual")
+async def update_casual_active_status(user_id: int,admin_id: int, active: bool,customer_repository: CustomersRepository = Depends(CustomersRepository), repository: AdminRepository = Depends(AdminRepository),operate_repository: OperateRepository = Depends(OperateRepository), db: AsyncSession = Depends(get_db))->UserBase:
+    user = await repository.modify_user_active_status(db, user_id, active)
+    customer = await get_customer_value(user.Id_Users,customer_repository,db)
+    id_casual = customer.Id_Casual
+    exist_operate = await get_operate_by_id(id_casual, operate_repository,db)
+    if not exist_operate:
+        await create_operate(OperateBase(Id_Admin=admin_id, Id_Casual=id_casual),admin_id,operate_repository, db)
 
     user_dict = model_to_dict(user) 
     return UserBase(**user_dict)
 
-@router.put("/admin/{id_producers}/active_state", status_code=status.HTTP_200_OK,response_model=UserBase,summary="Modify active state on producers")
-async def update_producer_active_status(id_producers: int,admin_id: int, active: bool, repository: AdminRepository = Depends(AdminRepository),carry_on_repository: CarryOnRepository = Depends(CarryOnRepository), db: AsyncSession = Depends(get_db))->UserBase:
+@router.put("/admin/producers/active_state", status_code=status.HTTP_200_OK,response_model=UserBase,summary="Modify active state on producers")
+async def update_producer_active_status(id_producers: int,admin_id: int, active: bool,carry_on_repository: CarryOnRepository = Depends(CarryOnRepository), repository: AdminRepository = Depends(AdminRepository),producer_repository: ProducersRepository = Depends(ProducersRepository),db: AsyncSession = Depends(get_db))->UserBase:
     user = await repository.modify_user_active_status(db, id_producers, active)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    new_operate = await create_carry_on(CarryOnBase(Id_Admin=admin_id, Id_Producers=id_producers),carry_on_repository, db)
-    if not new_operate:
-        await update_carry_on(admin_id, CarryOnBase(Id_Admin=admin_id, Id_Producers=id_producers), carry_on_repository, db)
+    Timestamp = datetime.now().isoformat()
+    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
+    producer = await get_producer_value(user.Id_Users,producer_repository,db)
+    id_prod = producer.Id_Producers
+    exist_carry_on = await get_carry_onose_by_id(id_prod, carry_on_repository, db)
+    if not exist_carry_on:
+        await create_carry_on(CarryOnBase(Id_Admin=admin_id, Id_Producers=id_prod, date_carry=given_date_exact),id_prod,carry_on_repository, db)
 
     user_dict = model_to_dict(user) 
     return UserBase(**user_dict)

@@ -1,4 +1,4 @@
 from pydantic import BaseModel
 
 class AdminBase(BaseModel):
-    Id_Users: int
+    Id_Admin: int

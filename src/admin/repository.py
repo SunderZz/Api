@@ -11,7 +11,7 @@ class AdminRepository:
         return result.scalars().all()
     
     async def get_admin_query(self, db: AsyncSession, admin: int) -> Admin:
-        result = await db.execute(select(Admin).filter(Admin.Id_Admin == admin))
+        result = await db.execute(select(Admin).filter(Admin.Id_Users == admin))
         return result.scalar_one_or_none()
 
     async def create_admin(self, db: AsyncSession, admin: Admin) -> Admin:

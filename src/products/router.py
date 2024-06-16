@@ -1,6 +1,6 @@
 import products.models as models
 from typing import Annotated
-from .schema import ProductBase,ProductIdBase
+from .schema import ProductBase,ProductIdBase,ProductRetrievedBase
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
@@ -14,17 +14,17 @@ from is_on.schema import IsOnBase
 router = APIRouter(tags=["products"])
 
 
-@router.get("/products/", status_code=status.HTTP_200_OK, response_model=list[ProductBase])
-async def get_products(produit_repository: ProductRepository = Depends(ProductRepository),db:AsyncSession = Depends(get_db))-> list[ProductBase]:
+@router.get("/products/", status_code=status.HTTP_200_OK, response_model=list[ProductRetrievedBase])
+async def get_products(produit_repository: ProductRepository = Depends(ProductRepository),db:AsyncSession = Depends(get_db))-> list[ProductRetrievedBase]:
     products = await produit_repository.get_product(db)
     products_list = [model_to_dict(product) for product in products]
-    return [ProductBase(**product_dict) for product_dict in products_list]
+    return [ProductRetrievedBase(**product_dict) for product_dict in products_list]
 
-@router.get("/products_discount/", status_code=status.HTTP_200_OK, response_model=list[ProductBase])
-async def get_products_discount(produit_repository: ProductRepository = Depends(ProductRepository),db:AsyncSession = Depends(get_db))-> list[ProductBase]:
+@router.get("/products_discount/", status_code=status.HTTP_200_OK, response_model=list[ProductRetrievedBase])
+async def get_products_discount(produit_repository: ProductRepository = Depends(ProductRepository),db:AsyncSession = Depends(get_db))-> list[ProductRetrievedBase]:
     products = await produit_repository.get_product_by_discount(db)
     products_list = [model_to_dict(product) for product in products]
-    return [ProductBase(**product_dict) for product_dict in products_list]
+    return [ProductRetrievedBase(**product_dict) for product_dict in products_list]
 
 @router.get("/products_by_name/{products}", response_model=ProductBase | list[ProductBase])
 async def get_product_by_name(products_name: str, products_repository: ProductRepository = Depends(ProductRepository), db:AsyncSession = Depends(get_db)) -> list[ProductBase]|ProductBase|None:
@@ -50,13 +50,13 @@ async def get_product_id_by_name(products_name: str, products_repository: Produc
         product_dict = model_to_dict(value)
         return ProductIdBase(**product_dict)
     
-@router.get("/products_by_id/", response_model=ProductBase | list[ProductBase] |None)
-async def get_product_by_ids(id: int, products_repository: ProductRepository = Depends(ProductRepository), db:AsyncSession = Depends(get_db)) -> list[ProductBase]|ProductBase|None:
+@router.get("/products_by_id/", response_model=ProductRetrievedBase | list[ProductRetrievedBase] |None)
+async def get_product_by_ids(id: int, products_repository: ProductRepository = Depends(ProductRepository), db:AsyncSession = Depends(get_db)) -> list[ProductRetrievedBase]|ProductRetrievedBase|None:
     value = await products_repository.get_product_id(db, id)
     if value is None:
         raise HTTPException(status_code=404, detail="product not found or attribute not found")
     product_dict = model_to_dict(value)
-    return ProductBase(**product_dict)
+    return ProductRetrievedBase(**product_dict)
 
 @router.get("/products/{products}/query", response_model=ProductIdBase)
 async def get_product_value(products: int, products_repository: ProductRepository = Depends(ProductRepository), db:AsyncSession = Depends(get_db)) -> ProductIdBase:
@@ -66,8 +66,8 @@ async def get_product_value(products: int, products_repository: ProductRepositor
     product_dict = model_to_dict(value)
     return ProductIdBase(**product_dict)
 
-@router.get("/products/season", response_model=ProductBase |list[ProductBase])
-async def get_product_value_by_season(is_on: int, products_repository: ProductRepository = Depends(ProductRepository),is_on_repository: IsOnRepository = Depends(IsOnRepository), db:AsyncSession = Depends(get_db)) -> ProductBase |list[ProductBase]:
+@router.get("/products/season", response_model=ProductRetrievedBase |list[ProductRetrievedBase])
+async def get_product_value_by_season(is_on: int, products_repository: ProductRepository = Depends(ProductRepository),is_on_repository: IsOnRepository = Depends(IsOnRepository), db:AsyncSession = Depends(get_db)) -> ProductRetrievedBase |list[ProductRetrievedBase]:
     value = await products_repository.get_product(db)
     product_in_season_ids = []
     for product in value:
@@ -98,7 +98,8 @@ async def update_product(product_id: int, product: ProductBase,season:int|None =
     updated_product = await product_repository.update_product(db, product_id, product)
     if updated_product is None:
         raise HTTPException(status_code=404, detail="produit_image not found")
-    await update_is_on(IsOnBase(Id_Product=updated_product.Id_Product,Id_Season=season),is_on_repository,db)
+    await update_is_on(product_id,IsOnBase(Id_Product=updated_product.Id_Product,Id_Season=season),is_on_repository,db)
     produit_image_dict = model_to_dict(updated_product) 
     return ProductBase(**produit_image_dict)
     
+

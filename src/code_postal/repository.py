@@ -10,6 +10,10 @@ class CodePostalRepository:
     async def get_code_postal_query(self, db: AsyncSession, code_postal: int) -> Code_Postal:
         result = await db.execute(select(Code_Postal).filter(Code_Postal.code_postal == code_postal))
         return result.scalar_one_or_none()
+    
+    async def get_code_postal_by_id(self, db: AsyncSession, id: int) -> Code_Postal:
+        result = await db.execute(select(Code_Postal).filter(Code_Postal.Id_Code_Postal == id))
+        return result.scalar_one_or_none()
 
     async def create_code_postal(self, db: AsyncSession, code_postal: Code_Postal) -> Code_Postal:
         db_code_postal = Code_Postal(**code_postal.dict())

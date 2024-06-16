@@ -5,12 +5,13 @@ from database import get_db
 import requests
 import json
 from typing import Annotated, Optional
-from .schema import UsersAdressesBase
+from .schema import UsersAdressesBase, UsersAdressesModifyBase, UsersCreateAdressesBase
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import engine2, AsyncSessionLocal
 from .repository import UsersAdressesRepository
 from common import model_to_dict, url
+from fastapi import Form
 
 from located.router import create_located,update_located,get_located_by_ids
 from located.schema import LocatedBase
@@ -31,7 +32,7 @@ from preference_ship.router import create_preference_ship
 from preference_ship.schema import PreferenceshipBase
 from preference_ship.repository import PreferenceshipRepository
 
-router = APIRouter(prefix="/users",tags=["users_adresses"])
+router = APIRouter(tags=["users_adresses"])
 
 @router.get("/users/{adresse_id}/addresses", response_model=list[UsersAdressesBase])
 async def get_user_addresses(adresse_id: int,user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db:AsyncSession = Depends(get_db))->list[UsersAdressesBase]:
@@ -47,55 +48,100 @@ async def get_user_position(authorize: bool):
         url_key = url
         geo_req = requests.get(url_key)
         geo_json = json.loads(geo_req.text)
-    return geo_json
+        return geo_json
+    return None
 
 
-@router.post("/users_adresses/addresses", response_model=UsersAdressesBase)
-async def create_user_an_address(authorize : bool,address: UsersAdressesBase,code_postal:CodePostalBase,city: CityBase,got_repository:GotRepository = Depends(GotRepository),asso_33_repository:Asso_33Repository = Depends(Asso_33Repository),preference_ship_repository:PreferenceshipRepository = Depends(PreferenceshipRepository),city_repositoy:CityRepository = Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),located_repository:LocatedRepository= Depends(LocatedRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository), db:AsyncSession = Depends(get_db)) -> UsersAdressesBase:
+@router.post("/users_adresses", response_model=UsersCreateAdressesBase)
+async def create_user_an_address(
+    Adresse: str = Form(...),
+    Phone: str = Form(...),
+    code_postal: str = Form(...),
+    city: str = Form(...),
+    got_repository: GotRepository = Depends(GotRepository),
+    asso_33_repository: Asso_33Repository = Depends(Asso_33Repository),
+    preference_ship_repository: PreferenceshipRepository = Depends(PreferenceshipRepository),
+    city_repository: CityRepository = Depends(CityRepository),
+    code_postal_repository: CodePostalRepository = Depends(CodePostalRepository),
+    located_repository: LocatedRepository = Depends(LocatedRepository),
+    user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),
+    authorize: bool | None = None,
+    db: AsyncSession = Depends(get_db)
+) -> UsersCreateAdressesBase:
     acces = await get_user_position(authorize)
     Timestamp = datetime.now().isoformat()
     given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
+
     if acces:
         address_Latitude = acces['latitude']
         address_Longitude = acces['longitude']
-        db_address = await user_adresse_repository.create_user_address(db, UsersAdressesBase(Adresse=address.Adresse,Phone=address.Phone,Creation=given_date_exact,Latitude=address_Latitude,Longitude=address_Longitude))
+        db_address = await user_adresse_repository.create_user_address(
+            db,
+            UsersAdressesBase(
+                Adresse=Adresse,
+                Phone=Phone,
+                Creation=given_date_exact,
+                Latitude=address_Latitude,
+                Longitude=address_Longitude
+            )
+        )
     else:
-        db_address = await user_adresse_repository.create_user_address(db, UsersAdressesBase(Adresse=address.Adresse,Phone=address.Phone,Creation=given_date_exact))
-    code =await create_code_postales(code_postal,code_postal_repository,db)
-    value = await get_code_postal_value(code.code_postal,code_postal_repository,db)
-    city_value = await create_city(city,city_repositoy,db)
-    city_id = await get_city_by_names(city_value.Name,city_repositoy,db)
-    await create_got(GotBase(Id_Code_Postal=value.Id_Code_Postal,Id_City=city_id.Id_City),got_repository,db)
-    await create_located(LocatedBase(Id_Code_Postal=value.Id_Code_Postal,Id_Users_adresses=db_address.Id_Users_adresses),located_repository,db)
-    ship_id = await create_preference_ship(PreferenceshipBase(),preference_ship_repository,db)
-    await create_asso_33(Asso_33Base(Id_Preferenceship=ship_id.Id_Preferenceship,Id_Users_adresses=db_address.Id_Users_adresses),asso_33_repository,db)
-    address_dict = model_to_dict(db_address) 
-    return UsersAdressesBase(**address_dict)
+        db_address = await user_adresse_repository.create_user_address(
+            db,
+            UsersAdressesBase(
+                Adresse=Adresse,
+                Phone=Phone,
+                Creation=given_date_exact
+            )
+        )
+    
+    address_dict = model_to_dict(db_address)
+    _address = UsersCreateAdressesBase(**address_dict)
+    
+    code = await create_code_postales(CodePostalBase(code_postal=code_postal), code_postal_repository, db)
+    city_value = await create_city(CityBase(Name=city), city_repository, db)
+    
+    await create_got(GotBase(Id_Code_Postal=code.Id_Code_Postal, Id_City=city_value.Id_City), got_repository, db)
+    await create_located(LocatedBase(Id_Code_Postal=code.Id_Code_Postal, Id_Users_adresses=_address.Id_Users_adresses), located_repository, db)
+    
+    ship_id = await create_preference_ship(PreferenceshipBase(), preference_ship_repository, db)
+    await create_asso_33(Asso_33Base(Id_Preferenceship=ship_id.Id_Preferenceship, Id_Users_adresses=_address.Id_Users_adresses), asso_33_repository, db)
+    
+    return _address
 
 
-@router.put("/users/{user_id}/addresses/{address_id}", response_model=UsersAdressesBase)
-async def update_user_address(authorize:bool,address_id: int,address: UsersAdressesBase,postal_code: Optional[int] = None,city: Optional[str] = None,got_repository:GotRepository = Depends(GotRepository),city_repository:CityRepository = Depends(CityRepository),code_postal_repository:CodePostalRepository= Depends(CodePostalRepository),user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),located_repository:LocatedRepository= Depends(LocatedRepository), db:AsyncSession = Depends(get_db)) -> UsersAdressesBase:
-    acces = await get_user_position(authorize)
+@router.put("/users_adresses/{address_id}", response_model=UsersAdressesModifyBase)
+async def update_user_address(
+    address_id: int,
+    Adresse: str = Form(...),
+    Phone: str = Form(...),
+    code_postal: str = Form(...),
+    city: str = Form(...),
+    got_repository: GotRepository = Depends(GotRepository),
+    city_repository: CityRepository = Depends(CityRepository),
+    code_postal_repository: CodePostalRepository = Depends(CodePostalRepository),
+    located_repository: LocatedRepository = Depends(LocatedRepository),
+    user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),
+    db: AsyncSession = Depends(get_db)
+) -> UsersAdressesModifyBase:
     Timestamp = datetime.now().isoformat()
     given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
-    if acces:
-        address_Latitude = acces['latitude']
-        address_Longitude = acces['longitude']
-        updated_address = await user_adresse_repository.update_user_address(db, address_id, UsersAdressesBase(Adresse=address.Adresse,Phone=address.Phone,Modification=given_date_exact,Latitude=address_Latitude,Longitude=address_Longitude))
-    else:
-        updated_address = await user_adresse_repository.update_user_address(db,address_id, UsersAdressesBase(Adresse=address.Adresse,Phone=address.Phone,Modification=given_date_exact))
-    if postal_code:
-        code =await create_code_postales(CodePostalBase(code_postal=postal_code),code_postal_repository,db)
-        value = await get_code_postal_value(code.code_postal,code_postal_repository,db)
-        await create_located(LocatedBase(Id_Code_Postal=value.Id_Code_Postal,Id_Users_adresses=updated_address.Id_Users_adresses),located_repository,db)
-    if city:
-        city_value = await create_city(CityBase(Name=city),city_repository,db)
-        value_city = await get_city_by_names(city_value.Name,city_repository,db)
-        if city and postal_code:
-            code =await create_code_postales(CodePostalBase(code_postal=postal_code),code_postal_repository,db)
-            value = await get_code_postal_value(code.code_postal,code_postal_repository,db)
-            print(value.Id_Code_Postal)
-            print(value_city.Id_City)
-            await update_got(GotBase(Id_City=value_city.Id_City,Id_Code_Postal=value.Id_Code_Postal),value.Id_Code_Postal,got_repository,db)
-    address_dict = model_to_dict(updated_address)
-    return UsersAdressesBase(**address_dict)
+    address_data = UsersAdressesModifyBase(
+        Adresse=Adresse, 
+        Phone=Phone, 
+        Modification=given_date_exact
+    )
+    db_address = await user_adresse_repository.update_user_address(db, address_id, address_data)
+    
+    if db_address is None:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    address_dict = model_to_dict(db_address)
+    _address = UsersCreateAdressesBase(**address_dict)
+    code_postal_data = CodePostalBase(code_postal=code_postal)
+    city_data = CityBase(Name=city)
+    code = await create_code_postales(code_postal_data, code_postal_repository, db)
+    city_value = await create_city(city_data, city_repository, db)
+    await create_got(GotBase(Id_Code_Postal=code.Id_Code_Postal, Id_City=city_value.Id_City), got_repository, db)
+    await create_located(LocatedBase(Id_Code_Postal=code.Id_Code_Postal, Id_Users_adresses=_address.Id_Users_adresses), located_repository, db)
+    return _address

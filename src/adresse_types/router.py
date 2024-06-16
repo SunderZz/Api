@@ -41,7 +41,7 @@ async def get_adresses_type_user(user_id: int, adresses_types_repository: Adress
 
 
 @router.post("/adresses_types/", status_code=status.HTTP_201_CREATED, response_model=AdresseTypeBase)
-async def create_adresses_types(user:int,adresse_type: AdresseTypeBase,adresses_types_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db:AsyncSession = Depends(get_db))-> AdresseTypeBase:
+async def create_adresses_types(adresse_type: AdresseTypeBase,adresses_types_repository: AdresseTypesRepository = Depends(AdresseTypesRepository), db:AsyncSession = Depends(get_db))-> AdresseTypeBase:
     new_adresse_type = await adresses_types_repository.create_adressestypes(db, adresse_type)
     adresses_type_dict = model_to_dict(new_adresse_type) 
     return AdresseTypeBase(**adresses_type_dict)

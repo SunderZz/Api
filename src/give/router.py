@@ -23,6 +23,14 @@ async def get_give_by_id(give_id: int, give_repository: GiveRepository = Depends
         raise HTTPException(status_code=404, detail="give not found")
     return GiveBase(**model_to_dict(give))
 
+@router.get("/give_producers", status_code=status.HTTP_200_OK, response_model=list[GiveBase])
+async def get_give_by_id(give_id: int, give_repository: GiveRepository = Depends(GiveRepository), db:AsyncSession = Depends(get_db)) -> list[GiveBase]:
+    give = await give_repository.get_give_by_id_producers(db, give_id)
+    if give is None:
+        raise HTTPException(status_code=404, detail="give not found")
+    gives_list = [model_to_dict(giveS) for giveS in give]
+    return [GiveBase(**give_dict) for give_dict in gives_list]
+
 @router.post("/give/", status_code=status.HTTP_201_CREATED, response_model=GiveBase)
 async def create_give(give: GiveBase, give_repository: GiveRepository = Depends(GiveRepository), db:AsyncSession = Depends(get_db)) -> GiveBase:
     new_give = await give_repository.create_give(db, give)

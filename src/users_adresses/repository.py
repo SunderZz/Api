@@ -23,10 +23,7 @@ class UsersAdressesRepository:
         if user_address:
             user_address.Adresse = address.Adresse
             user_address.Phone = address.Phone
-            user_address.Creation = address.Creation
             user_address.Modification = datetime.now()
-            user_address.Latitude = address.Latitude
-            user_address.Longitude = address.Longitude
             await db.commit()
             await db.refresh(user_address)
         return user_address

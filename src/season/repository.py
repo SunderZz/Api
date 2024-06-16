@@ -4,9 +4,17 @@ from sqlalchemy.future import select
 
 class SeasonRepository:
     async def get_seasons(self, db: AsyncSession) -> Season:
-        result = await db.execute(select(Season))
+        result = await db.execute(select(Season)) 
+        return result.scalars().all()
+    
+    async def get_season_by_id(self, db: AsyncSession, id: int) -> Season:
+        result = await db.execute(select(Season).filter(Season.Id_Season == id))
         return result.scalar_one_or_none()
     
+    async def get_season_by_name(self, db: AsyncSession, name: str) -> Season:
+        result = await db.execute(select(Season).filter(Season.Name == name))
+        return result.scalar_one_or_none()
+
     async def create_season(self, db: AsyncSession, season: Season) -> Season:
         db_season = Season(**season.dict())
         db.add(db_season)

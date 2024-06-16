@@ -7,8 +7,8 @@ class RecipesRepository:
         result = await db.execute(select(Recipes))
         return result.scalars().all()
     
-    async def get_Recipes_query(self, db: AsyncSession, ingredient: int) -> Recipes:
-        result = await db.execute(select(Recipes).filter(Recipes.ingredient == ingredient))
+    async def get_Recipes_query(self, db: AsyncSession, id: int) -> Recipes:
+        result = await db.execute(select(Recipes).filter(Recipes.Id_Recipes == id))
         return result.scalar_one_or_none()
     
     async def create_Recipes(self, db: AsyncSession, recipes: Recipes) -> Recipes:

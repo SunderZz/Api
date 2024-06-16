@@ -26,7 +26,6 @@ async def get_located_by_ids(located_id: int, located_repository: LocatedReposit
 @router.post("/located/", status_code=status.HTTP_201_CREATED, response_model=LocatedBase)
 async def create_located(located: LocatedBase, located_repository: LocatedRepository = Depends(LocatedRepository), db:AsyncSession = Depends(get_db)) -> LocatedBase:
     id_code= located.Id_Users_adresses
-    print(id_code)
     existing_code_postal = await get_located_by_ids(id_code,located_repository,db)
     if existing_code_postal is not None:
         return existing_code_postal

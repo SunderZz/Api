@@ -18,6 +18,8 @@ router = APIRouter(tags=["recipes"])
 @router.get("/recipes/search",status_code=status.HTTP_200_OK, response_model=list[RecipesBase] | RecipesBase |None)
 async def search_recipes(query: str,recipes_repository: RecipesRepository = Depends(RecipesRepository), db:AsyncSession = Depends(get_db))-> list[RecipesBase] | RecipesBase |None:
     result = await recipes_repository.find_recipe_by_query(db, query)
+    if not result:
+        return None
     if isinstance(result, list):
         recipes_list = [model_to_dict(recipes) for recipes in result]
         return [RecipesBase(**recipes_dict) for recipes_dict in recipes_list]
@@ -42,12 +44,13 @@ async def get_recipes_value(product: str,recipe: str,recipes_repository: Recipes
         recipes_instance = await search_recipes(product,recipes_repository,db)
         return recipes_instance
 
-@router.get("/recipes/by_products", response_model=RecipesBase)
-async def get_recipes_by_products(recipe: str, recipes_repository: RecipesRepository = Depends(RecipesRepository), db:AsyncSession = Depends(get_db)) -> RecipesBase:
+@router.get("/recipes_id", response_model=RecipesBase)
+async def get_recipes_by_products(recipe: int, recipes_repository: RecipesRepository = Depends(RecipesRepository), db:AsyncSession = Depends(get_db)) -> RecipesBase:
     value = await recipes_repository.get_Recipes_query(db, recipe)
     if value is None:
         raise HTTPException(status_code=404, detail="recipes not found or attribute not found")
-    return RecipesBase(value=value)
+    recipes_dict = model_to_dict(value)
+    return RecipesBase(**recipes_dict)
 
 
 @router.post("/recipes/", status_code=status.HTTP_201_CREATED, response_model=RecipesBase)

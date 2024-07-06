@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import re
 import jwt
 
@@ -27,3 +27,8 @@ def validate_password(password: str) -> bool:
     if not re.search(r"[@$!%*?&]", password):
         return False
     return True
+
+def get_actual_ts():
+    Timestamp = datetime.now().isoformat()
+    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
+    return given_date_exact

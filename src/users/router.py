@@ -19,7 +19,7 @@ from adresse_types.repository import AdresseTypesRepository
 from users_adresses.router import (
     create_user_an_address,
     update_user_address,
-    get_user_addresses,
+    get_user_addresse,
 )
 from users_adresses.schema import UsersAdressesBase, UsersCreateAdressesBase
 from users_adresses.repository import UsersAdressesRepository
@@ -290,7 +290,6 @@ async def modify_user_address(
 async def retrieve_adresse_information(
     adresse_id: int,
     user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),
-    adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[UsersAdressesBase]:
     db_address = await get_user_addresses(adresse_id, user_adresse_repository, db)

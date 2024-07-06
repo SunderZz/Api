@@ -4,7 +4,7 @@ from datetime import date
 
 class UsersAdressesBase(BaseModel):
     Adresse: str
-    Phone: str
+    Phone: int
     Creation: date
     Modification: date | None = None
     Latitude: float | None = None
@@ -13,13 +13,13 @@ class UsersAdressesBase(BaseModel):
 
 class UsersAdressesModifyBase(BaseModel):
     Adresse: str
-    Phone: str
+    Phone: int
     Modification: date
 
 
 class UsersCreateAdressesBase(BaseModel):
     Id_Users_adresses: int
     Adresse: str
-    Phone: str
+    Phone: int
     Creation: date | None = None
     Modification: date | None = None

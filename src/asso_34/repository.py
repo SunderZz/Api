@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Asso_34
 from sqlalchemy.future import select
 
+
 class Asso_34Repository:
 
     async def create_asso_34(self, db: AsyncSession, asso: Asso_34) -> Asso_34:

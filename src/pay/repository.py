@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Pay
 from sqlalchemy.future import select
 
+
 class PayRepository:
 
     async def create_pay(self, db: AsyncSession, pay: Pay) -> Pay:

@@ -23,7 +23,7 @@ from is_on.router import router as ison_router
 from linede.router import router as linede_router
 from located.router import router as located_router
 from manage.router import router as manage_router
-from méteo.router import router as méteo_router
+from méteo.router import router as weather_router
 from notice.router import router as notice_router
 from operate.router import router as operate_router
 from orders.router import router as orders_router
@@ -32,7 +32,7 @@ from payement.router import router as payement_router
 from preference_ship.router import router as preference_ship_router
 from producers.router import router as producers_router
 from products.router import router as products_router
-from produit_image_1.router import router as produit_image_router
+from produit_image_1.router import router as product_image_router
 from recipes.router import router as recipes_router
 from redac.router import router as redact_router
 from season.router import router as season_router
@@ -51,8 +51,8 @@ origins = [
     "http://localhost:8080",
     "http://localhost:5173",
     "http://localhost:8081",
+    "http://10.0.0.36:8000",
     "https://meteo.francetvinfo.fr/previsions-meteo-outremer/la-reunion",
-    "exp://192.168.1.14:8081",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -64,9 +64,11 @@ app.add_middleware(
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
+
 async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
+
 
 db_dependency = Annotated[AsyncSession, Depends(get_db)]
 
@@ -88,7 +90,7 @@ app.include_router(ison_router)
 app.include_router(linede_router)
 app.include_router(located_router)
 app.include_router(manage_router)
-app.include_router(méteo_router)
+app.include_router(weather_router)
 app.include_router(notice_router)
 app.include_router(operate_router)
 app.include_router(orders_router)
@@ -97,7 +99,7 @@ app.include_router(payement_router)
 app.include_router(preference_ship_router)
 app.include_router(producers_router)
 app.include_router(products_router)
-app.include_router(produit_image_router)
+app.include_router(product_image_router)
 app.include_router(recipes_router)
 app.include_router(redact_router)
 app.include_router(season_router)
@@ -109,4 +111,5 @@ app.include_router(users_adresses_router)
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

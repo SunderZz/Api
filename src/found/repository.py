@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Found
 from sqlalchemy.future import select
 
+
 class FoundRepository:
 
     async def create_found(self, db: AsyncSession, found: Found) -> Found:

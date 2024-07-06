@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Give_1
 from sqlalchemy.future import select
 
+
 class Give_1Repository:
 
     async def create_give_1(self, db: AsyncSession, given: Give_1) -> Give_1:

@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Is_On
 from sqlalchemy.future import select
 
+
 class IsOnRepository:
 
     async def create_is_on(self, db: AsyncSession, is_On: Is_On) -> Is_On:
@@ -18,7 +19,7 @@ class IsOnRepository:
     async def get_is_on_by_id(self, db: AsyncSession, id: int) -> list[Is_On]:
         result = await db.execute(select(Is_On).filter(Is_On.Id_Season == id))
         return result.scalars().all()
-    
+
     async def get_season_with_produt(self, db: AsyncSession, id: int) -> Is_On:
         result = await db.execute(select(Is_On).filter(Is_On.Id_Product == id))
         return result.scalar_one_or_none()

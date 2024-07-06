@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Choose
 from sqlalchemy.future import select
 
+
 class ChooseRepository:
 
     async def create_choose(self, db: AsyncSession, choose: Choose) -> Choose:

@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Manage
 from sqlalchemy.future import select
 
+
 class ManageRepository:
 
     async def create_manage(self, db: AsyncSession, manage: Manage) -> Manage:

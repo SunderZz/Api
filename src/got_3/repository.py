@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Got
 from sqlalchemy.future import select
 
+
 class GotRepository:
 
     async def create_got(self, db: AsyncSession, got: Got) -> Got:
@@ -19,7 +20,9 @@ class GotRepository:
         result = await db.execute(select(Got).filter(Got.Id_Code_Postal == id))
         return result.scalars().all()
 
-    async def update_got(self, db: AsyncSession, got: Got, id: int | None = None) -> Got:
+    async def update_got(
+        self, db: AsyncSession, got: Got, id: int | None = None
+    ) -> Got:
         result = await db.execute(select(Got).filter(Got.Id_City == id))
         db_Got = result.scalar_one_or_none()
         if db_Got:

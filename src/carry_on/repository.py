@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import CarryOn
 from sqlalchemy.future import select
 
+
 class CarryOnRepository:
 
     async def create_carry_on(self, db: AsyncSession, carry_on: CarryOn) -> CarryOn:
@@ -19,7 +20,9 @@ class CarryOnRepository:
         result = await db.execute(select(CarryOn).filter(CarryOn.Id_Producers == id))
         return result.scalar_one_or_none()
 
-    async def update_carry_on(self, db: AsyncSession, id: int, carry_on: CarryOn) -> CarryOn:
+    async def update_carry_on(
+        self, db: AsyncSession, id: int, carry_on: CarryOn
+    ) -> CarryOn:
         result = await db.execute(select(CarryOn).filter(CarryOn.Id_Producers == id))
         db_given = result.scalar_one_or_none()
         if db_given:

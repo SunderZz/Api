@@ -12,29 +12,53 @@ router = APIRouter(tags=["manage"])
 
 
 @router.get("/manage/", status_code=status.HTTP_200_OK, response_model=list[ManageBase])
-async def get_manages(manage_repository: ManageRepository = Depends(ManageRepository), db:AsyncSession = Depends(get_db)) -> list[ManageBase]:
+async def get_manages(
+    manage_repository: ManageRepository = Depends(ManageRepository),
+    db: AsyncSession = Depends(get_db),
+) -> list[ManageBase]:
     manages = await manage_repository.get_manage(db)
     manages_list = [model_to_dict(manage) for manage in manages]
     return [ManageBase(**manage_dict) for manage_dict in manages_list]
 
-@router.get("/manage/{manage_id}", status_code=status.HTTP_200_OK, response_model=ManageBase)
-async def get_manage_by_id(manage_id: int, manage_repository: ManageRepository = Depends(ManageRepository), db:AsyncSession = Depends(get_db)) -> ManageBase:
+
+@router.get(
+    "/manage/{manage_id}", status_code=status.HTTP_200_OK, response_model=ManageBase
+)
+async def get_manage_by_id(
+    manage_id: int,
+    manage_repository: ManageRepository = Depends(ManageRepository),
+    db: AsyncSession = Depends(get_db),
+) -> ManageBase:
     manage = await manage_repository.get_manage_by_id(db, manage_id)
     if manage is None:
         raise HTTPException(status_code=404, detail="manage not found")
     return ManageBase(**model_to_dict(manage))
 
+
 @router.post("/manage/", status_code=status.HTTP_201_CREATED, response_model=ManageBase)
-async def create_manage(manage: ManageBase,manage_id:int, manage_repository: ManageRepository = Depends(ManageRepository), db:AsyncSession = Depends(get_db)) -> ManageBase:
-    existing_manage  = await manage_repository.get_manage_by_id(db, manage_id)
+async def create_manage(
+    manage: ManageBase,
+    manage_id: int,
+    manage_repository: ManageRepository = Depends(ManageRepository),
+    db: AsyncSession = Depends(get_db),
+) -> ManageBase:
+    existing_manage = await manage_repository.get_manage_by_id(db, manage_id)
     if existing_manage:
         return existing_manage
     new_manage = await manage_repository.create_manage(db, manage)
     manage_dict = model_to_dict(new_manage)
     return ManageBase(**manage_dict)
 
-@router.put("/manage/{manage_id}", status_code=status.HTTP_200_OK, response_model=ManageBase)
-async def update_manage(manage_id: int, manage: ManageBase, manage_repository: ManageRepository = Depends(ManageRepository), db:AsyncSession = Depends(get_db)) -> ManageBase:
+
+@router.put(
+    "/manage/{manage_id}", status_code=status.HTTP_200_OK, response_model=ManageBase
+)
+async def update_manage(
+    manage_id: int,
+    manage: ManageBase,
+    manage_repository: ManageRepository = Depends(ManageRepository),
+    db: AsyncSession = Depends(get_db),
+) -> ManageBase:
     updated_manage = await manage_repository.update_manage(db, manage_id, manage)
     if updated_manage is None:
         raise HTTPException(status_code=404, detail="manage not found")

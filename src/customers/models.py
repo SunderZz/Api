@@ -2,11 +2,12 @@ from sqlalchemy import Column, ForeignKey, Integer
 from database import Base
 from sqlalchemy.orm import relationship
 
+
 class Customers(Base):
-    __tablename__ = 'customers'
+    __tablename__ = "customers"
 
     Id_Casual = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    Id_Users = Column(Integer, ForeignKey('users.Id_Users'), nullable=False)
+    Id_Users = Column(Integer, ForeignKey("users.Id_Users"), nullable=False)
     pays = relationship("Pay", back_populates="customer")
     operates = relationship("Operate", back_populates="customer")
     give_1 = relationship("Give_1", back_populates="customer")

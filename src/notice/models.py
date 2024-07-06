@@ -2,8 +2,9 @@ from sqlalchemy import Column, Integer, String, TIMESTAMP
 from database import Base
 from sqlalchemy.orm import relationship
 
+
 class Notice(Base):
-    __tablename__ = 'notice'
+    __tablename__ = "notice"
 
     Id_Notice = Column(Integer, primary_key=True, autoincrement=True, index=True)
     Title = Column(String(50))

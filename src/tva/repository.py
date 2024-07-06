@@ -2,11 +2,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Tva
 from sqlalchemy.future import select
 
+
 class TvaRepository:
     async def get_tva(self, db: AsyncSession, tva_id: int):
         result = await db.execute(select(Tva).filter(Tva.Id_Tva == tva_id))
         return result.scalar_one_or_none()
-    
+
     async def get_all_tva(self, db: AsyncSession) -> list[Tva]:
         result = await db.execute(select(Tva))
         return result.scalars().all()

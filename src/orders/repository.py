@@ -2,15 +2,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Orders
 from sqlalchemy.future import select
 
+
 class OrdersRepository:
     async def get_orders(self, db: AsyncSession) -> list[Orders]:
         result = await db.execute(select(Orders))
         return result.scalars().all()
-    
+
     async def get_orders_query(self, db: AsyncSession, id_orders: int) -> Orders:
         result = await db.execute(select(Orders).filter(Orders.Id_Orders == id_orders))
         return result.scalar_one_or_none()
-    
+
     async def create_orders(self, db: AsyncSession, orders: Orders) -> Orders:
         db_orders = Orders(**orders.dict())
         db.add(db_orders)
@@ -18,7 +19,9 @@ class OrdersRepository:
         await db.refresh(db_orders)
         return db_orders
 
-    async def update_orders(self, db: AsyncSession, orders_id: int, db_orders_data: Orders) -> Orders:
+    async def update_orders(
+        self, db: AsyncSession, orders_id: int, db_orders_data: Orders
+    ) -> Orders:
         result = await db.execute(select(Orders).filter(Orders.Id_Orders == orders_id))
         db_orders = result.scalar_one_or_none()
         if db_orders is None:

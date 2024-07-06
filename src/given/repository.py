@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Given
 from sqlalchemy.future import select
 
+
 class GivenRepository:
 
     async def create_given(self, db: AsyncSession, given: Given) -> Given:
@@ -18,8 +19,10 @@ class GivenRepository:
     async def get_given_by_id(self, db: AsyncSession, id: int) -> Given:
         result = await db.execute(select(Given).filter(Given.Id_Notice == id))
         return result.scalar_one_or_none()
-    
-    async def get_notice_by_product(self, db: AsyncSession, product: int) -> list[Given]| Given | None:
+
+    async def get_notice_by_product(
+        self, db: AsyncSession, product: int
+    ) -> list[Given] | Given | None:
         result = await db.execute(select(Given).filter(Given.Id_Product == product))
         return result.scalars().all()
 

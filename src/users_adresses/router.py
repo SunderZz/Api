@@ -2,11 +2,18 @@ from fastapi import HTTPException, APIRouter, Depends, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import users_adresses.models as models
-from users_adresses.schema import UsersAdressesBase, UsersAdressesModifyBase, UsersCreateAdressesBase
+from users_adresses.schema import (
+    UsersAdressesBase,
+    UsersAdressesModifyBase,
+    UsersCreateAdressesBase,
+)
 from users_adresses.repository import UsersAdressesRepository
 from database import get_db
 from common import get_actual_ts
-from users_adresses.services import create_user_address_service, update_user_address_service
+from users_adresses.services import (
+    create_user_address_service,
+    update_user_address_service,
+)
 from users_adresses.services import get_user_position
 
 from located.repository import LocatedRepository
@@ -18,6 +25,7 @@ from asso_33.repository import Asso_33Repository
 from preference_ship.repository import PreferenceshipRepository
 
 router = APIRouter(tags=["users_adresses"])
+
 
 @router.get(
     "/users_adresses/{adresse_id}",
@@ -34,7 +42,12 @@ async def get_user_addresse(
         raise HTTPException(status_code=404, detail="addresses not found")
     return adresses
 
-@router.post("/users_adresses", response_model=UsersCreateAdressesBase)
+
+@router.post(
+    "/users_adresses",
+    response_model=UsersCreateAdressesBase,
+    description="create an adresse of an user",
+)
 async def create_user_an_address(
     Adresse: str = Form(...),
     Phone: int = Form(...),
@@ -71,7 +84,12 @@ async def create_user_an_address(
         db,
     )
 
-@router.put("/users_adresses/{address_id}", response_model=UsersAdressesModifyBase)
+
+@router.put(
+    "/users_adresses/{address_id}",
+    response_model=UsersAdressesModifyBase,
+    description="update an adresse of an user",
+)
 async def update_user_address(
     address_id: int,
     Adresse: str = Form(...),

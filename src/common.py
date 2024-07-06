@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime as date_ts
+import datetime
 import re
 import jwt
 
@@ -28,7 +29,8 @@ def validate_password(password: str) -> bool:
         return False
     return True
 
+
 def get_actual_ts():
-    Timestamp = datetime.now().isoformat()
-    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
+    Timestamp = date_ts.now().isoformat()
+    given_date_exact = date_ts.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
     return given_date_exact

@@ -5,7 +5,11 @@ from fastapi import HTTPException
 
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from users_adresses.schema import UsersAdressesBase, UsersCreateAdressesBase, UsersAdressesModifyBase
+from users_adresses.schema import (
+    UsersAdressesBase,
+    UsersCreateAdressesBase,
+    UsersAdressesModifyBase,
+)
 from users_adresses.repository import UsersAdressesRepository
 from common import model_to_dict
 from code_postal.schema import CodePostalBase
@@ -24,9 +28,7 @@ from preference_ship.repository import PreferenceshipRepository
 from located.router import create_located
 from located.schema import LocatedBase
 from located.repository import LocatedRepository
-from code_postal.router import (
-    create_code_postales
-)
+from code_postal.router import create_code_postales
 from code_postal.schema import CodePostalBase
 from code_postal.repository import CodePostalRepository
 from city.router import create_city
@@ -54,7 +56,8 @@ async def get_user_position(authorize: bool):
         return geo_json
     return None
 
-#create user adresse
+
+# create user adresse
 async def create_user_address_service(
     Adresse: str,
     Phone: str,
@@ -125,6 +128,7 @@ async def create_user_address_service(
     )
 
     return _address
+
 
 async def update_user_address_service(
     address_id: int,

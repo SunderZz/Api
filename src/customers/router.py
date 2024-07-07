@@ -14,7 +14,7 @@ from payement.repository import PaymentRepository
 from pay.repository import PayRepository
 from orders.schema import OrdersBase
 from orders.repository import OrdersRepository
-from orders.router import create_orders_from_user, update_orders
+from orders.router import create_orders_from_user
 
 router = APIRouter(tags=["customers"])
 

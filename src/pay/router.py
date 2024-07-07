@@ -43,17 +43,3 @@ async def create_pay(
     new_pay = await pay_repository.create_pay(db, pay)
     pay_dict = model_to_dict(new_pay)
     return PayBase(**pay_dict)
-
-
-@router.put("/pay/{payment_id}", status_code=status.HTTP_200_OK, response_model=PayBase)
-async def update_pay(
-    payment_id: int,
-    pay: PayBase,
-    pay_repository: PayRepository = Depends(PayRepository),
-    db: AsyncSession = Depends(get_db),
-) -> PayBase:
-    updated_pay = await pay_repository.update_pay(db, payment_id, pay)
-    if updated_pay is None:
-        raise HTTPException(status_code=404, detail="Pay not found")
-    pay_dict = model_to_dict(updated_pay)
-    return PayBase(**pay_dict)

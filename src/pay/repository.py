@@ -19,13 +19,3 @@ class PayRepository:
     async def get_pay_by_id(self, db: AsyncSession, id: int) -> Pay:
         result = await db.execute(select(Pay).filter(Pay.Id_Payments == id))
         return result.scalar_one_or_none()
-
-    async def update_pay(self, db: AsyncSession, id: int, pay: Pay) -> Pay:
-        result = await db.execute(select(Pay).filter(Pay.Id_Payments == id))
-        db_pay = result.scalar_one_or_none()
-        if db_pay:
-            for key, value in pay.dict().items():
-                setattr(db_pay, key, value)
-            await db.commit()
-            await db.refresh(db_pay)
-        return db_pay

@@ -8,7 +8,7 @@ from database import engine2, AsyncSessionLocal
 from .repository import IsOnRepository
 from common import model_to_dict
 from season.schema import SeasonRetrieveBase
-from season.router import get_seasons_with_product_id
+from season.router import get_seasons_with_id
 from season.repository import SeasonRepository
 
 

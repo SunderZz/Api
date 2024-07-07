@@ -1,15 +1,19 @@
 import tva.models as models
-from typing import Annotated
-from .schema import TvaBase, TvaCalculationResult
-from fastapi import APIRouter, Depends, HTTPException, status
+from .schema import TvaBase, TvaCalculationResult, TvaCreateBase
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
-from database import engine2, AsyncSessionLocal
 from .repository import TvaRepository
-from common import model_to_dict
+from .services import (
+    get_tva_service,
+    get_tva_with_name_service,
+    calculate_tva_service,
+    get_all_tva_service,
+    update_tva_service,
+    create_tva_service
+)
 
 router = APIRouter(tags=["tva"])
-
 
 @router.get("/tva/{tva_id}", response_model=TvaBase)
 async def get_tva(
@@ -17,25 +21,15 @@ async def get_tva(
     tva_repository: TvaRepository = Depends(TvaRepository),
     db: AsyncSession = Depends(get_db),
 ) -> TvaBase:
-    tva = await tva_repository.get_tva(db, tva_id)
-    if tva is None:
-        raise HTTPException(status_code=404, detail="Tva not found")
-    tva_dict = model_to_dict(tva)
-    return TvaBase(**tva_dict)
+    return await get_tva_service(tva_id, tva_repository, db)
 
-
-@router.get("/tva_name/{tva_id}", response_model=TvaBase)
+@router.get("/tva_name/{tva_name}", response_model=TvaBase)
 async def get_tva_with_name(
-    tva_id: str,
+    tva_name: str,
     tva_repository: TvaRepository = Depends(TvaRepository),
     db: AsyncSession = Depends(get_db),
 ) -> TvaBase:
-    tva = await tva_repository.get_tva_by_name(db, tva_id)
-    if tva is None:
-        raise HTTPException(status_code=404, detail="Tva not found")
-    tva_dict = model_to_dict(tva)
-    return TvaBase(**tva_dict)
-
+    return await get_tva_with_name_service(tva_name, tva_repository, db)
 
 @router.get("/tva/calculate/{tva_name}", response_model=TvaCalculationResult)
 async def calculate_tva(
@@ -44,42 +38,28 @@ async def calculate_tva(
     db: AsyncSession = Depends(get_db),
     tva_repository: TvaRepository = Depends(TvaRepository),
 ) -> TvaCalculationResult:
-    tva_value = await tva_repository.calculate_tva(db, price, tva_name)
-    if tva_value is None:
-        raise HTTPException(status_code=404, detail="Tva not found")
-    return TvaCalculationResult(value=tva_value)
-
+    return await calculate_tva_service(tva_name, price, tva_repository, db)
 
 @router.get("/tva", status_code=status.HTTP_200_OK, response_model=list[TvaBase])
 async def get_all_tva(
     tva_repository: TvaRepository = Depends(TvaRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[TvaBase]:
-    Tva = await tva_repository.get_all_tva(db)
-    tvas_list = [model_to_dict(tvas) for tvas in Tva]
-    return [TvaBase(**tva_dict) for tva_dict in tvas_list]
-
+    return await get_all_tva_service(tva_repository, db)
 
 @router.put("/tva/{tva_id}", response_model=TvaBase)
 async def update_tva(
     tva_id: int,
-    tva: TvaBase,
+    tva: TvaCreateBase,
     tva_repository: TvaRepository = Depends(TvaRepository),
     db: AsyncSession = Depends(get_db),
 ) -> TvaBase:
-    updated_tva = await tva_repository.update_tva(db, tva, tva_id)
-    if updated_tva is None:
-        raise HTTPException(status_code=404, detail="Tva not found")
-    tva_dict = model_to_dict(updated_tva)
-    return TvaBase(**tva_dict)
-
+    return await update_tva_service(tva_id, tva, tva_repository, db)
 
 @router.post("/tva/", response_model=TvaBase)
 async def create_tva(
-    tva: TvaBase,
+    tva: TvaCreateBase,
     tva_repository: TvaRepository = Depends(TvaRepository),
     db: AsyncSession = Depends(get_db),
 ) -> TvaBase:
-    created_tva = await tva_repository.create_tva(db, tva)
-    tva_dict = model_to_dict(created_tva)
-    return TvaBase(**tva_dict)
+    return await create_tva_service(tva, tva_repository, db)

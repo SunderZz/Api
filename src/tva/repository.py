@@ -37,4 +37,4 @@ class TvaRepository:
         tva = await self.get_tva_by_name(db, tva_name)
         if tva is None:
             return None
-        return price * (tva.Rate / 100)
+        return price + (price * (tva.Rate / 100))

@@ -8,7 +8,6 @@ from .services import (
     get_manage_by_id_service,
     create_manage_service,
 )
-from common import model_to_dict
 
 router = APIRouter(tags=["manage"])
 

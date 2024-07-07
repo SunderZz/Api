@@ -1,16 +1,18 @@
-import season.models as models
 from database import get_db
-from typing import Annotated
 from .schema import IsOnBase
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import engine2, AsyncSessionLocal
 from .repository import IsOnRepository
-from common import model_to_dict
+from .services import (
+    get_is_ons_service,
+    get_is_on_by_id_service,
+    get_seasons_with_product_service,
+    create_is_on_service,
+    update_is_on_service,
+    delete_is_on_service,
+)
 from season.schema import SeasonRetrieveBase
-from season.router import get_seasons_with_id
 from season.repository import SeasonRepository
-
 
 router = APIRouter(tags=["is_on"])
 
@@ -20,9 +22,7 @@ async def get_is_ons(
     is_on_repository: IsOnRepository = Depends(IsOnRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[IsOnBase]:
-    is_ons = await is_on_repository.get_is_on(db)
-    is_ons_list = [model_to_dict(is_on) for is_on in is_ons]
-    return [IsOnBase(**is_on_dict) for is_on_dict in is_ons_list]
+    return await get_is_ons_service(is_on_repository, db)
 
 
 @router.get(
@@ -35,34 +35,23 @@ async def get_is_on_by_id(
     is_on_repository: IsOnRepository = Depends(IsOnRepository),
     db: AsyncSession = Depends(get_db),
 ) -> IsOnBase | list[IsOnBase]:
-    is_on = await is_on_repository.get_is_on_by_id(db, is_on_id)
-    if is_on is None:
-        raise HTTPException(status_code=404, detail="is_on not found")
-    if isinstance(is_on, list):
-        is_ons_list = [model_to_dict(is_ons) for is_ons in is_on]
-        return [IsOnBase(**is_on_dict) for is_on_dict in is_ons_list]
-    else:
-        return IsOnBase(**model_to_dict(is_on))
+    return await get_is_on_by_id_service(is_on_id, is_on_repository, db)
 
 
 @router.get(
     "/get_seasons_with_product",
     status_code=status.HTTP_200_OK,
-    response_model=SeasonRetrieveBase,
+    response_model=SeasonRetrieveBase | list[SeasonRetrieveBase],
 )
 async def get_seasons_with_product(
     is_on_id: int,
     is_on_repository: IsOnRepository = Depends(IsOnRepository),
     season_repository: SeasonRepository = Depends(SeasonRepository),
     db: AsyncSession = Depends(get_db),
-) -> SeasonRetrieveBase:
-    is_on = await is_on_repository.get_season_with_produt(db, is_on_id)
-    if is_on is None:
-        raise HTTPException(status_code=404, detail="is_on not found")
-    result = IsOnBase(**model_to_dict(is_on))
-    id_season = result.Id_Season
-    season = await get_seasons_with_product_id(id_season, season_repository, db)
-    return season
+) -> SeasonRetrieveBase | list[SeasonRetrieveBase]:
+    return await get_seasons_with_product_service(
+        is_on_id, is_on_repository, season_repository, db
+    )
 
 
 @router.post("/is_on/", status_code=status.HTTP_201_CREATED, response_model=IsOnBase)
@@ -71,9 +60,7 @@ async def create_is_on(
     is_on_repository: IsOnRepository = Depends(IsOnRepository),
     db: AsyncSession = Depends(get_db),
 ) -> IsOnBase:
-    new_is_on = await is_on_repository.create_is_on(db, is_on)
-    is_on_dict = model_to_dict(new_is_on)
-    return IsOnBase(**is_on_dict)
+    return await create_is_on_service(is_on, is_on_repository, db)
 
 
 @router.put(
@@ -85,8 +72,13 @@ async def update_is_on(
     is_on_repository: IsOnRepository = Depends(IsOnRepository),
     db: AsyncSession = Depends(get_db),
 ) -> IsOnBase:
-    updated_is_on = await is_on_repository.update_is_on(db, is_on_id, is_on)
-    if updated_is_on is None:
-        raise HTTPException(status_code=404, detail="is_on not found")
-    is_on_dict = model_to_dict(updated_is_on)
-    return IsOnBase(**is_on_dict)
+    return await update_is_on_service(is_on_id, is_on, is_on_repository, db)
+
+
+@router.delete("/is_on/{is_on_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_is_on(
+    is_on_id: int,
+    is_on_repository: IsOnRepository = Depends(IsOnRepository),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    return await delete_is_on_service(is_on_id, is_on_repository, db)

@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Is_On
 from sqlalchemy.future import select
+from sqlalchemy import delete
 
 
 class IsOnRepository:
@@ -22,7 +23,7 @@ class IsOnRepository:
 
     async def get_season_with_produt(self, db: AsyncSession, id: int) -> Is_On:
         result = await db.execute(select(Is_On).filter(Is_On.Id_Product == id))
-        return result.scalar_one_or_none()
+        return result.scalars().all()
 
     async def update_is_on(self, db: AsyncSession, id: int, is_On: Is_On) -> Is_On:
         result = await db.execute(select(Is_On).filter(Is_On.Id_Product == id))
@@ -32,4 +33,12 @@ class IsOnRepository:
                 setattr(db_is_On, key, value)
             await db.commit()
             await db.refresh(db_is_On)
+        return db_is_On
+
+    async def delete_is_on(self, db: AsyncSession, id: int) -> Is_On:
+        result = await db.execute(select(Is_On).filter(Is_On.Id_Product == id))
+        db_is_On = result.scalar_one_or_none()
+        if db_is_On:
+            await db.execute(delete(Is_On).where(Is_On.Id_Product == id))
+            await db.commit()
         return db_is_On

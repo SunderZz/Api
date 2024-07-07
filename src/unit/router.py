@@ -1,10 +1,7 @@
-import unit.models as models
 from database import get_db
-from typing import Annotated
 from .schema import UnitBase, UnitIdBase
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import engine2, AsyncSessionLocal
 from .repository import UnitRepository
 from common import model_to_dict
 

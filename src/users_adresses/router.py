@@ -1,7 +1,6 @@
 from fastapi import HTTPException, APIRouter, Depends, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import users_adresses.models as models
 from users_adresses.schema import (
     UsersAdressesBase,
     UsersAdressesModifyBase,

@@ -1,4 +1,3 @@
-import produit_image_1.models as models
 from .schema import ProduitImageBase
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -1,4 +1,3 @@
-import season.models as models
 from database import get_db
 from .schema import SeasonBase, SeasonRetrieveBase
 from fastapi import APIRouter, Depends, status

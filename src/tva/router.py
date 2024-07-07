@@ -1,4 +1,3 @@
-import tva.models as models
 from .schema import TvaBase, TvaCalculationResult, TvaCreateBase
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession

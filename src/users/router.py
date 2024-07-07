@@ -2,7 +2,6 @@ from fastapi import HTTPException, APIRouter, Depends, Form, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
-import users.models as models
 from users.schema import LogoutRequest, UserBase, UserCreate
 from users.repository import UsersRepository
 from database import get_db

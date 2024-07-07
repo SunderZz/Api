@@ -1,9 +1,7 @@
-import products.models as models
 from .schema import ProductBase, ProductIdBase, ProductRetrievedBase
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
-from database import engine2, AsyncSessionLocal
 from .repository import ProductRepository
 from .services import (
     get_products_service,

@@ -3,9 +3,9 @@ from pydantic import BaseModel
 
 class UnitBase(BaseModel):
     Kg: float | None = None
-    Litre: int | None = None
+    Litre: float | None = None
     Unit: int | None = None
-    Gramme: int | None = None
+    Gramme: float | None = None
 
 
 class UnitIdBase(BaseModel):

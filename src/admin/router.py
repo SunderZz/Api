@@ -28,7 +28,7 @@ from redac.repository import RedactRepository
 from customers.router import get_customer_value
 from customers.schema import CustomersBase
 from customers.repository import CustomersRepository
-from producers.router import get_producer_value
+from producers.router import get_producer_by_user
 from producers.schema import ProducersBase
 from producers.repository import ProducersRepository
 
@@ -185,7 +185,7 @@ async def update_producer_active_status(
     user = await repository.modify_user_active_status(db, id_producers, active)
     Timestamp = datetime.now().isoformat()
     given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
-    producer = await get_producer_value(user.Id_Users, producer_repository, db)
+    producer = await get_producer_by_user(user.Id_Users, producer_repository, db)
     id_prod = producer.Id_Producers
     exist_carry_on = await get_carry_onose_by_id(id_prod, carry_on_repository, db)
     if not exist_carry_on:

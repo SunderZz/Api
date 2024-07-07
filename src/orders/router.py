@@ -11,7 +11,7 @@ from common import model_to_dict
 from linede.router import create_linede_for_order, get_linede_by_id
 from linede.repository import LinedeRepository
 from linede.schema import LinedeBase
-from products.router import get_product_value
+from products.router import get_product_by_ids
 from products.repository import ProductRepository
 from products.schema import ProductBase
 from give.router import get_give_by_id, update_give
@@ -90,7 +90,7 @@ async def create_orders_card(
 
     new_orders = await create_orders_from_user(casual, orders_repository, db)
     if isinstance(products, int):
-        product_added = await get_product_value(products, products_repository, db)
+        product_added = await get_product_by_ids(products, products_repository, db)
         for product_in_card in product_added:
             product_id = product_in_card[1]
             created_card = await create_linede_for_order(
@@ -103,7 +103,7 @@ async def create_orders_card(
     else:
         product_added = []
         for product in products:
-            result = await get_product_value(product, products_repository, db)
+            result = await get_product_by_ids(product, products_repository, db)
             product_added.append(result)
         for product_in_card, quantite in zip(product_added, quantity):
             product_id = product_in_card.Id_Product
@@ -128,7 +128,7 @@ async def update_orders_card(
     linede_repository: LinedeRepository = Depends(LinedeRepository),
     db: AsyncSession = Depends(get_db),
 ) -> LinedeBase:
-    choosen_product = await get_product_value(products, products_repository, db)
+    choosen_product = await get_product_by_ids(products, products_repository, db)
     new_product = await create_linede_for_order(
         LinedeBase(
             Id_Orders=order, Id_Product=choosen_product.Id_Product, qte=quantity

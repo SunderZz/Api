@@ -8,10 +8,11 @@ from .services import (
     get_produit_images_service,
     get_produit_image_value_service,
     create_produit_image_service,
-    update_produit_image_service
+    update_produit_image_service,
 )
 
 router = APIRouter(tags=["produit_image"])
+
 
 @router.get(
     "/produit_image/",
@@ -24,13 +25,17 @@ async def get_produit_images(
 ) -> list[ProduitImageBase]:
     return await get_produit_images_service(produit_image_repository, db)
 
+
 @router.get("/produit_image/{produit_image}", response_model=ProduitImageBase)
 async def get_produit_image_value(
     produit_image: str,
     produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProduitImageBase:
-    return await get_produit_image_value_service(produit_image, produit_image_repository, db)
+    return await get_produit_image_value_service(
+        produit_image, produit_image_repository, db
+    )
+
 
 @router.post(
     "/produit_image/",
@@ -42,7 +47,10 @@ async def create_produit_image(
     produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProduitImageBase:
-    return await create_produit_image_service(produit_image, produit_image_repository, db)
+    return await create_produit_image_service(
+        produit_image, produit_image_repository, db
+    )
+
 
 @router.put(
     "/produit_image/{produit_image_id}",
@@ -55,4 +63,6 @@ async def update_produit_image(
     produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProduitImageBase:
-    return await update_produit_image_service(produit_image_id, produit_image, produit_image_repository, db)
+    return await update_produit_image_service(
+        produit_image_id, produit_image, produit_image_repository, db
+    )

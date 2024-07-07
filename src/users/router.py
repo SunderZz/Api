@@ -28,7 +28,12 @@ from users_adresses.repository import UsersAdressesRepository
 
 router = APIRouter(tags=["users"])
 
-@router.get("/users/{user_id}", response_model=UserBase, description="retrieve informations of an user")
+
+@router.get(
+    "/users/{user_id}",
+    response_model=UserBase,
+    description="retrieve informations of an user",
+)
 async def get_user(
     user_id: int,
     user_repository: UsersRepository = Depends(UsersRepository),
@@ -40,7 +45,12 @@ async def get_user(
     user_dict = model_to_dict(user)
     return UserBase(**user_dict)
 
-@router.get("/users_by_token", response_model=UserBase,description="retrieve informations of an user with token")
+
+@router.get(
+    "/users_by_token",
+    response_model=UserBase,
+    description="retrieve informations of an user with token",
+)
 async def get_user_by_token(
     token: str,
     user_repository: UsersRepository = Depends(UsersRepository),
@@ -52,7 +62,10 @@ async def get_user_by_token(
     user_dict = model_to_dict(user)
     return UserBase(**user_dict)
 
-@router.get("/users", response_model=list[UserBase],description="get all user information")
+
+@router.get(
+    "/users", response_model=list[UserBase], description="get all user information"
+)
 async def get_users(
     user_repository: UsersRepository = Depends(UsersRepository),
     db: AsyncSession = Depends(get_db),
@@ -60,6 +73,7 @@ async def get_users(
     users = await user_repository.get_all_users(db)
     users_dict = [model_to_dict(user) for user in users]
     return [UserBase(**user_dict) for user_dict in users_dict]
+
 
 @router.post("/users/login", response_model=UserBase)
 async def login_user(
@@ -74,6 +88,7 @@ async def login_user(
     user_dict = model_to_dict(user)
     return UserBase(**user_dict)
 
+
 @router.delete("/users/logout", status_code=200)
 async def logout_user(
     logout_request: LogoutRequest,
@@ -83,9 +98,10 @@ async def logout_user(
     user = await user_repository.get_user(db, logout_request.user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     await user_repository.delete_token(db, logout_request.user_id)
     return
+
 
 @router.post("/users/", response_model=UserBase)
 async def create_user_type(
@@ -127,6 +143,7 @@ async def create_user_type(
     )
     return user_id
 
+
 @router.get("/adresse_of_user", response_model=list[UsersAdressesBase])
 async def retrieve_adresse_information(
     adresse_id: int,
@@ -136,6 +153,7 @@ async def retrieve_adresse_information(
     db_address = await get_user_addresse(adresse_id, user_adresse_repository, db)
     return db_address
 
+
 @router.get("/users/{user_id}/addresses", response_model=list[UsersAdressesBase])
 async def retrieve_user_address(
     user_id: int,
@@ -144,11 +162,9 @@ async def retrieve_user_address(
     db: AsyncSession = Depends(get_db),
 ) -> list[UsersAdressesBase]:
     return await retrieve_user_address_service(
-        user_id,
-        user_adresse_repository,
-        adresse_type_repository,
-        db
+        user_id, user_adresse_repository, adresse_type_repository, db
     )
+
 
 @router.post("/users/{user_id}/addresses", response_model=AdresseTypeBase)
 async def create_address_type_for_user(
@@ -156,7 +172,5 @@ async def create_address_type_for_user(
     adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
     db: AsyncSession = Depends(get_db),
 ) -> AdresseTypeBase:
-    db_address = await create_adresses_types(
-        adresse_type, adresse_type_repository, db
-    )
+    db_address = await create_adresses_types(adresse_type, adresse_type_repository, db)
     return db_address

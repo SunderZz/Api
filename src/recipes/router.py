@@ -1,5 +1,5 @@
 import recipes.models as models
-from .schema import RecipesBase,RecipesCreateBase
+from .schema import RecipesBase, RecipesCreateBase
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
@@ -10,12 +10,13 @@ from .services import (
     get_recipes_value_service,
     get_recipes_by_products_service,
     create_recipes_service,
-    update_recipes_service
+    update_recipes_service,
 )
 from products.repository import ProductRepository
 from found.repository import FoundRepository
 
 router = APIRouter(tags=["recipes"])
+
 
 @router.get(
     "/recipes/search",
@@ -29,6 +30,7 @@ async def search_recipes(
 ) -> list[RecipesBase] | RecipesBase | None:
     return await search_recipes_service(query, recipes_repository, db)
 
+
 @router.get(
     "/recipes/", status_code=status.HTTP_200_OK, response_model=list[RecipesBase]
 )
@@ -37,6 +39,7 @@ async def get_recipes(
     db: AsyncSession = Depends(get_db),
 ) -> list[RecipesBase]:
     return await get_recipes_service(recipes_repository, db)
+
 
 @router.get("/recipes/{recipe}", response_model=list[RecipesBase] | RecipesBase | None)
 async def get_recipes_value(
@@ -47,6 +50,7 @@ async def get_recipes_value(
 ) -> list[RecipesBase] | RecipesBase | None:
     return await get_recipes_value_service(product, recipe, recipes_repository, db)
 
+
 @router.get("/recipes_id", response_model=RecipesBase)
 async def get_recipes_by_id(
     recipe: int,
@@ -54,6 +58,7 @@ async def get_recipes_by_id(
     db: AsyncSession = Depends(get_db),
 ) -> RecipesBase:
     return await get_recipes_by_products_service(recipe, recipes_repository, db)
+
 
 @router.post(
     "/recipes/", status_code=status.HTTP_201_CREATED, response_model=RecipesBase
@@ -65,7 +70,10 @@ async def create_recipes(
     recipes_repository: RecipesRepository = Depends(RecipesRepository),
     db: AsyncSession = Depends(get_db),
 ) -> RecipesBase:
-    return await create_recipes_service(recipes, products_repository, found_repository, recipes_repository, db)
+    return await create_recipes_service(
+        recipes, products_repository, found_repository, recipes_repository, db
+    )
+
 
 @router.put(
     "/recipes/{recipes_id}", status_code=status.HTTP_200_OK, response_model=RecipesBase

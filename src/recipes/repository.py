@@ -34,12 +34,17 @@ class RecipesRepository:
         await db.commit()
         return db_recipes
 
-    async def find_recipe_by_query(self, db: AsyncSession, query: str) -> list[Recipes] | None:
+    async def find_recipe_by_query(
+        self, db: AsyncSession, query: str
+    ) -> list[Recipes] | None:
         all_recipes = await self.get_Recipes(db)
         matching_recipes = []
 
         for recipe in all_recipes:
-            ingredients_list = [ingredient.strip().lower() for ingredient in recipe.ingredient.split('.')]
+            ingredients_list = [
+                ingredient.strip().lower()
+                for ingredient in recipe.ingredient.split(".")
+            ]
             if query.lower() in ingredients_list:
                 matching_recipes.append(recipe)
 

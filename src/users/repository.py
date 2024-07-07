@@ -31,7 +31,7 @@ class UsersRepository:
     async def get_user(self, db: AsyncSession, user_id: str) -> Users:
         result = await db.execute(select(Users).filter(Users.Id_Users == user_id))
         return result.scalar_one_or_none()
-    
+
     async def delete_token(self, db: AsyncSession, user_id: str) -> None:
         result = await db.execute(select(Users).filter(Users.Id_Users == user_id))
         user = result.scalar_one_or_none()

@@ -8,10 +8,11 @@ from .services import (
     get_all_shipment_costs_service,
     get_one_shipment_service,
     create_shipment_service,
-    update_shipment_service
+    update_shipment_service,
 )
 
 router = APIRouter(tags=["shipment_cost"])
+
 
 @router.get(
     "/shipment_cost/",
@@ -19,18 +20,24 @@ router = APIRouter(tags=["shipment_cost"])
     response_model=list[ShipmentsCostBase],
 )
 async def get_all_shipment(
-    shipment_cost_repository: ShipmentsCostRepository = Depends(ShipmentsCostRepository),
+    shipment_cost_repository: ShipmentsCostRepository = Depends(
+        ShipmentsCostRepository
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> list[ShipmentsCostBase]:
     return await get_all_shipment_costs_service(shipment_cost_repository, db)
 
+
 @router.get("/shipment_cost/{shipment_id}", response_model=ShipmentsCostBase)
 async def get_one_shipment(
     shipment_id: int,
-    shipment_cost_repository: ShipmentsCostRepository = Depends(ShipmentsCostRepository),
+    shipment_cost_repository: ShipmentsCostRepository = Depends(
+        ShipmentsCostRepository
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> ShipmentsCostBase:
     return await get_one_shipment_service(shipment_id, shipment_cost_repository, db)
+
 
 @router.post(
     "/shipment_cost/",
@@ -39,10 +46,13 @@ async def get_one_shipment(
 )
 async def create_shipment(
     shipment: ShipmentsCostBase,
-    shipment_cost_repository: ShipmentsCostRepository = Depends(ShipmentsCostRepository),
+    shipment_cost_repository: ShipmentsCostRepository = Depends(
+        ShipmentsCostRepository
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> ShipmentsCostBase:
     return await create_shipment_service(shipment, shipment_cost_repository, db)
+
 
 @router.put(
     "/shipment_cost/{shipment_id}",
@@ -52,7 +62,11 @@ async def create_shipment(
 async def update_shipment(
     shipment_id: int,
     shipment: ShipmentsCostBase,
-    shipment_cost_repository: ShipmentsCostRepository = Depends(ShipmentsCostRepository),
+    shipment_cost_repository: ShipmentsCostRepository = Depends(
+        ShipmentsCostRepository
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> ShipmentsCostBase:
-    return await update_shipment_service(shipment_id, shipment, shipment_cost_repository, db)
+    return await update_shipment_service(
+        shipment_id, shipment, shipment_cost_repository, db
+    )

@@ -10,10 +10,11 @@ from .services import (
     calculate_tva_service,
     get_all_tva_service,
     update_tva_service,
-    create_tva_service
+    create_tva_service,
 )
 
 router = APIRouter(tags=["tva"])
+
 
 @router.get("/tva/{tva_id}", response_model=TvaBase)
 async def get_tva(
@@ -23,6 +24,7 @@ async def get_tva(
 ) -> TvaBase:
     return await get_tva_service(tva_id, tva_repository, db)
 
+
 @router.get("/tva_name/{tva_name}", response_model=TvaBase)
 async def get_tva_with_name(
     tva_name: str,
@@ -30,6 +32,7 @@ async def get_tva_with_name(
     db: AsyncSession = Depends(get_db),
 ) -> TvaBase:
     return await get_tva_with_name_service(tva_name, tva_repository, db)
+
 
 @router.get("/tva/calculate/{tva_name}", response_model=TvaCalculationResult)
 async def calculate_tva(
@@ -40,12 +43,14 @@ async def calculate_tva(
 ) -> TvaCalculationResult:
     return await calculate_tva_service(tva_name, price, tva_repository, db)
 
+
 @router.get("/tva", status_code=status.HTTP_200_OK, response_model=list[TvaBase])
 async def get_all_tva(
     tva_repository: TvaRepository = Depends(TvaRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[TvaBase]:
     return await get_all_tva_service(tva_repository, db)
+
 
 @router.put("/tva/{tva_id}", response_model=TvaBase)
 async def update_tva(
@@ -55,6 +60,7 @@ async def update_tva(
     db: AsyncSession = Depends(get_db),
 ) -> TvaBase:
     return await update_tva_service(tva_id, tva, tva_repository, db)
+
 
 @router.post("/tva/", response_model=TvaBase)
 async def create_tva(

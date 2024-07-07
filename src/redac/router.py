@@ -8,10 +8,11 @@ from .services import (
     get_redacts_service,
     get_redact_value_service,
     create_redact_service,
-    update_redact_service
+    update_redact_service,
 )
 
 router = APIRouter(tags=["redact"])
+
 
 @router.get("/redact/", status_code=status.HTTP_200_OK, response_model=list[RedactBase])
 async def get_redacts(
@@ -19,6 +20,7 @@ async def get_redacts(
     db: AsyncSession = Depends(get_db),
 ) -> list[RedactBase]:
     return await get_redacts_service(redact_repository, db)
+
 
 @router.get("/redact/{redact_id}", response_model=RedactBase)
 async def get_redact_value(
@@ -29,6 +31,7 @@ async def get_redact_value(
 ) -> RedactBase:
     return await get_redact_value_service(admin_id, redact_id, redact_repository, db)
 
+
 @router.post("/redact/", status_code=status.HTTP_201_CREATED, response_model=RedactBase)
 async def create_redact(
     admin_id: int,
@@ -37,7 +40,10 @@ async def create_redact(
     redact_repository: RedactRepository = Depends(RedactRepository),
     db: AsyncSession = Depends(get_db),
 ) -> RedactBase:
-    return await create_redact_service(admin_id, redact_id, redact, redact_repository, db)
+    return await create_redact_service(
+        admin_id, redact_id, redact, redact_repository, db
+    )
+
 
 @router.put(
     "/redact/{admin_id}/{recipe_id}",
@@ -51,4 +57,6 @@ async def update_redact(
     redact_repository: RedactRepository = Depends(RedactRepository),
     db: AsyncSession = Depends(get_db),
 ) -> RedactBase:
-    return await update_redact_service(admin_id, recipe_id, redact, redact_repository, db)
+    return await update_redact_service(
+        admin_id, recipe_id, redact, redact_repository, db
+    )

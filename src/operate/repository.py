@@ -19,15 +19,3 @@ class OperateRepository:
     async def get_operate_by_id(self, db: AsyncSession, id: int) -> Operate:
         result = await db.execute(select(Operate).filter(Operate.Id_Casual == id))
         return result.scalar_one_or_none()
-
-    async def update_operate(
-        self, db: AsyncSession, id: int, operate: Operate
-    ) -> Operate:
-        result = await db.execute(select(Operate).filter(Operate.Id_Casual == id))
-        db_operate = result.scalar_one_or_none()
-        if db_operate:
-            for key, value in operate.dict().items():
-                setattr(db_operate, key, value)
-            await db.commit()
-            await db.refresh(db_operate)
-        return db_operate

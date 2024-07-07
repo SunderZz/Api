@@ -19,13 +19,3 @@ class ManageRepository:
     async def get_manage_by_id(self, db: AsyncSession, id: int) -> Manage:
         result = await db.execute(select(Manage).filter(Manage.Id_Product == id))
         return result.scalar_one_or_none()
-
-    async def update_manage(self, db: AsyncSession, id: int, manage: Manage) -> Manage:
-        result = await db.execute(select(Manage).filter(Manage.Id_Product == id))
-        db_manage = result.scalar_one_or_none()
-        if db_manage:
-            for key, value in manage.dict().items():
-                setattr(db_manage, key, value)
-            await db.commit()
-            await db.refresh(db_manage)
-        return db_manage

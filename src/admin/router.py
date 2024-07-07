@@ -16,10 +16,10 @@ from operate.repository import OperateRepository
 from carry_on.router import create_carry_on, get_carry_onose_by_id
 from carry_on.schema import CarryOnBase
 from carry_on.repository import CarryOnRepository
-from manage.router import create_manage, update_manage
+from manage.router import create_manage
 from manage.schema import ManageBase
 from manage.repository import ManageRepository
-from recipes.router import create_recipes, update_recipes
+from recipes.router import update_recipes
 from recipes.schema import RecipesBase
 from recipes.repository import RecipesRepository
 from redac.router import create_redact, update_redact

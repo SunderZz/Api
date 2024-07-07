@@ -7,6 +7,7 @@ from .services import (
     get_orders_service,
     get_orders_value_service,
     create_orders_from_user_service,
+    update_orders_service,
     create_orders_card_service,
     update_orders_card_service,
     valid_orders_card_service,
@@ -45,6 +46,18 @@ async def create_orders_from_user(
     db: AsyncSession = Depends(get_db),
 ) -> OrdersIdBase:
     return await create_orders_from_user_service(orders, orders_repository, db)
+
+
+@router.put(
+    "/orders/{orders_id}", status_code=status.HTTP_200_OK, response_model=OrdersBase
+)
+async def update_orders(
+    orders_id: int,
+    orders: OrdersBase,
+    orders_repository: OrdersRepository = Depends(OrdersRepository),
+    db: AsyncSession = Depends(get_db),
+) -> OrdersBase:
+    return await update_orders_service(orders_id, orders, orders_repository, db)
 
 
 @router.post(

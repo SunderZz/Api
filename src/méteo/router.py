@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .scap import scrape_weather
+from .services import scrape_weather
 
 
 router = APIRouter(tags=["weather"])

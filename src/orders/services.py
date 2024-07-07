@@ -42,6 +42,19 @@ async def create_orders_from_user_service(
     return OrdersIdBase(**orders_dict)
 
 
+async def update_orders_service(
+    orders_id: int,
+    orders: OrdersBase,
+    orders_repository: OrdersRepository,
+    db: AsyncSession,
+) -> OrdersBase:
+    updated_orders = await orders_repository.update_orders(db, orders_id, orders)
+    if updated_orders is None:
+        raise HTTPException(status_code=404, detail="orders not found")
+    orders_dict = model_to_dict(updated_orders)
+    return OrdersBase(**orders_dict)
+
+
 async def create_orders_card_service(
     casual: OrdersBase,
     products: int | list[int],

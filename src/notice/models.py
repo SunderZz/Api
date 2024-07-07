@@ -7,8 +7,8 @@ class Notice(Base):
     __tablename__ = "notice"
 
     Id_Notice = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    Title = Column(String(50))
-    Notice = Column(String(50))
+    Title = Column(String(100))
+    Notice = Column(String(255))
     Notice_date = Column(TIMESTAMP, nullable=False)
     Note = Column(Integer, nullable=False)
     given = relationship("Given", back_populates="notice")

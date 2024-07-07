@@ -1,44 +1,38 @@
-import notice.models as models
-from typing import Annotated
 from .schema import NoticeBase, NoticeCreateBase
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
-from database import engine2, AsyncSessionLocal
-from common import model_to_dict
 from .repository import NoticeRepository
+from .services import (
+    get_notices_service,
+    get_notices_by_id_service,
+    create_notice_service,
+)
 
 router = APIRouter(tags=["notice"])
 
 
-@router.get("/notice/", status_code=status.HTTP_200_OK, response_model=list[NoticeBase])
+@router.get(
+    "/notices/", status_code=status.HTTP_200_OK, response_model=list[NoticeBase]
+)
 async def get_notices(
     notice_repository: NoticeRepository = Depends(NoticeRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[NoticeBase]:
-    notices = await notice_repository.get_notice(db)
-    notice_list = [model_to_dict(notice) for notice in notices]
-    return [NoticeBase(**notice_dict) for notice_dict in notice_list]
+    return await get_notices_service(notice_repository, db)
 
 
 @router.get(
-    "/notice/",
+    "/notice/{notice_id}",
     status_code=status.HTTP_200_OK,
-    response_model=list[NoticeBase] | NoticeBase | None,
+    response_model=NoticeBase,
 )
 async def get_notices_by_id(
-    notice: int,
+    notice_id: int,
     notice_repository: NoticeRepository = Depends(NoticeRepository),
     db: AsyncSession = Depends(get_db),
-) -> list[NoticeBase] | NoticeBase | None:
-    notices = await notice_repository.get_notice_by_id(db, notice)
-    if notices is None:
-        return None
-    if isinstance(notices, list):
-        notice_list = [model_to_dict(notice) for notice in notices]
-        return [NoticeBase(**notices_list) for notices_list in notice_list]
-    notice_list = [model_to_dict(notice) for notice in notices]
-    return [NoticeBase(**notice_dict) for notice_dict in notice_list]
+) -> NoticeBase:
+    return await get_notices_by_id_service(notice_id, notice_repository, db)
 
 
 @router.post(
@@ -49,6 +43,4 @@ async def create_notice(
     notice_repository: NoticeRepository = Depends(NoticeRepository),
     db: AsyncSession = Depends(get_db),
 ) -> NoticeCreateBase:
-    new_notice = await notice_repository.create_notice(db, notice)
-    notice_dict = model_to_dict(new_notice)
-    return NoticeCreateBase(**notice_dict)
+    return await create_notice_service(notice, notice_repository, db)

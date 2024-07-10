@@ -1,12 +1,14 @@
-import redac.models as models
-from typing import Annotated
 from .schema import RedactBase
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
-from database import engine2, AsyncSessionLocal
 from .repository import RedactRepository
-from common import model_to_dict
+from .services import (
+    get_redacts_service,
+    get_redact_value_service,
+    create_redact_service,
+    update_redact_service,
+)
 
 router = APIRouter(tags=["redact"])
 
@@ -16,9 +18,7 @@ async def get_redacts(
     redact_repository: RedactRepository = Depends(RedactRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[RedactBase]:
-    redacts = await redact_repository.get_Redact(db)
-    redacts_list = [model_to_dict(redact) for redact in redacts]
-    return [RedactBase(**redact_dict) for redact_dict in redacts_list]
+    return await get_redacts_service(redact_repository, db)
 
 
 @router.get("/redact/{redact_id}", response_model=RedactBase)
@@ -28,13 +28,7 @@ async def get_redact_value(
     redact_repository: RedactRepository = Depends(RedactRepository),
     db: AsyncSession = Depends(get_db),
 ) -> RedactBase:
-    value = await redact_repository.get_Redact_by_admin_and_recipe(
-        db, admin_id, redact_id
-    )
-    if value is None:
-        raise HTTPException(status_code=404, detail="redact not found")
-    redact_dict = model_to_dict(value)
-    return RedactBase(**redact_dict)
+    return await get_redact_value_service(admin_id, redact_id, redact_repository, db)
 
 
 @router.post("/redact/", status_code=status.HTTP_201_CREATED, response_model=RedactBase)
@@ -45,14 +39,9 @@ async def create_redact(
     redact_repository: RedactRepository = Depends(RedactRepository),
     db: AsyncSession = Depends(get_db),
 ) -> RedactBase:
-    existing_redac = await redact_repository.get_Redact_by_admin_and_recipe(
-        db, admin_id, redact_id
+    return await create_redact_service(
+        admin_id, redact_id, redact, redact_repository, db
     )
-    if existing_redac:
-        return existing_redac
-    new_redact = await redact_repository.create_Redact(db, redact)
-    redact_dict = model_to_dict(new_redact)
-    return RedactBase(**redact_dict)
 
 
 @router.put(
@@ -67,10 +56,6 @@ async def update_redact(
     redact_repository: RedactRepository = Depends(RedactRepository),
     db: AsyncSession = Depends(get_db),
 ) -> RedactBase:
-    updated_redact = await redact_repository.update_Redact(
-        db, admin_id, recipe_id, redact
+    return await update_redact_service(
+        admin_id, recipe_id, redact, redact_repository, db
     )
-    if updated_redact is None:
-        raise HTTPException(status_code=404, detail="redact not found")
-    redact_dict = model_to_dict(updated_redact)
-    return RedactBase(**redact_dict)

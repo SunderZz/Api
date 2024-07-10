@@ -6,8 +6,8 @@ class Adresse_Type(Base):
     __tablename__ = "adresse_type"
 
     Id_Adresse_Type = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    Shipment_Adresse = Column(String(50))
-    Adresse_Bills = Column(String(50))
+    Shipment_Adresse = Column(String(255))
+    Adresse_Bills = Column(String(255))
     Id_Users_adresses = Column(
         Integer, ForeignKey("Users_adresses.Id_Users_adresses"), nullable=False
     )

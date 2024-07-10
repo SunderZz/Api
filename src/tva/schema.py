@@ -7,5 +7,10 @@ class TvaBase(BaseModel):
     Id_Tva: int
 
 
+class TvaCreateBase(BaseModel):
+    Name: str
+    Rate: int
+
+
 class TvaCalculationResult(BaseModel):
     value: float

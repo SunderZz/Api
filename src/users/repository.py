@@ -32,11 +32,18 @@ class UsersRepository:
         result = await db.execute(select(Users).filter(Users.Id_Users == user_id))
         return result.scalar_one_or_none()
 
-    async def get_user_mail(self, db: AsyncSession, mail: str) -> Users:
+    async def delete_token(self, db: AsyncSession, user_id: str) -> None:
+        result = await db.execute(select(Users).filter(Users.Id_Users == user_id))
+        user = result.scalar_one_or_none()
+        if user:
+            user.token = None
+            await db.commit()
+
+    async def get_user_with_mail(self, db: AsyncSession, mail: str) -> Users:
         result = await db.execute(select(Users).filter(Users.Mail == mail))
         return result.scalar_one_or_none()
 
-    async def get_user_token(self, db: AsyncSession, token: str) -> Users:
+    async def get_user_with_token(self, db: AsyncSession, token: str) -> Users:
         result = await db.execute(select(Users).filter(Users.token == token))
         return result.scalar_one_or_none()
 
@@ -65,7 +72,7 @@ class UsersRepository:
         return db_user
 
     async def authenticate_user(self, db: AsyncSession, mail: str, password: str):
-        user = await self.get_user_mail(db, mail)
+        user = await self.get_user_with_mail(db, mail)
         if user and pwd_context.verify(password, user.Password):
             token = generate_token(user.Id_Users)
             user.token = token

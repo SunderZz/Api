@@ -1,20 +1,15 @@
-import users.models as models
-from typing import Annotated
 from .schema import CustomersBase
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
-from database import engine2, AsyncSessionLocal
-from common import model_to_dict
 from .repository import CustomersRepository
-from pay.router import create_pay
-from payement.router import create_payment
-from payement.schema import PaymentBase
-from payement.repository import PaymentRepository
-from pay.repository import PayRepository
-from orders.schema import OrdersBase
-from orders.repository import OrdersRepository
-from orders.router import create_orders_from_user, update_orders
+from .services import (
+    get_customers_service,
+    get_customer_value_service,
+    create_customer_service,
+    update_customer_service,
+)
+from orders.router import create_orders_from_user
 
 router = APIRouter(tags=["customers"])
 
@@ -26,9 +21,7 @@ async def get_customers(
     customers_repository: CustomersRepository = Depends(CustomersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[CustomersBase]:
-    customers = await customers_repository.get_customers(db)
-    customers_list = [model_to_dict(customer) for customer in customers]
-    return [CustomersBase(**customers_dict) for customers_dict in customers_list]
+    return await get_customers_service(customers_repository, db)
 
 
 @router.get("/customers_by_id", response_model=CustomersBase)
@@ -37,14 +30,7 @@ async def get_customer_value(
     customers_repository: CustomersRepository = Depends(CustomersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CustomersBase:
-    value = await customers_repository.get_customers_query(db, customers)
-    if value is None:
-        raise HTTPException(
-            status_code=404, detail="customer not found or attribute not found"
-        )
-    customers_dict = model_to_dict(value)
-
-    return CustomersBase(**customers_dict)
+    return await get_customer_value_service(customers, customers_repository, db)
 
 
 @router.post(
@@ -55,9 +41,7 @@ async def create_customer(
     customers_repository: CustomersRepository = Depends(CustomersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CustomersBase:
-    new_customer = await customers_repository.create_customers(db, customer)
-    customers_dict = model_to_dict(new_customer)
-    return CustomersBase(**customers_dict)
+    return await create_customer_service(customer, customers_repository, db)
 
 
 @router.put(
@@ -68,24 +52,12 @@ async def create_customer(
 async def update_customer(
     customer_id: int,
     customer: CustomersBase,
-    customer_repository: CustomersRepository = Depends(CustomersRepository),
+    customers_repository: CustomersRepository = Depends(CustomersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CustomersBase:
-    updated_customer = await customer_repository.update_customers(
-        db, customer_id, customer
+    return await update_customer_service(
+        customer_id, customer, customers_repository, db
     )
-    if updated_customer is None:
-        raise HTTPException(status_code=404, detail="customers not found")
-    customer_dict = model_to_dict(updated_customer)
-    return CustomersBase(**customer_dict)
-
-
-# @router.post("/customers/payment", status_code=status.HTTP_201_CREATED, response_model=CustomersBase)
-# async def create_customer_payment(customer_id:int,pay:PaymentBase,customer: CustomersBase,customers_repository: CustomersRepository = Depends(CustomersRepository), db:AsyncSession = Depends(get_db))-> CustomersBase:
-#     id_customer = await get_customer_value(customer_id,customers_repository,db)
-#     buy = await create_pay(PaymentBase(Id_Orders=,Bills=,Status=,Amount=,Payment_Date=))
-#     customers_dict = model_to_dict(new_customer)
-#     return CustomersBase(**customers_dict)
 
 
 @router.post(
@@ -99,6 +71,13 @@ async def create_customer_orders(
     db: AsyncSession = Depends(get_db),
 ) -> CustomersBase:
     order = await create_orders_from_user()
-    new_customer = await customers_repository.create_customers(db, customer)
-    customers_dict = model_to_dict(new_customer)
-    return CustomersBase(**customers_dict)
+    new_customer = await create_customer_service(customer, customers_repository, db)
+    return new_customer
+
+
+# @router.post("/customers/payment", status_code=status.HTTP_201_CREATED, response_model=CustomersBase)
+# async def create_customer_payment(customer_id:int,pay:PaymentBase,customer: CustomersBase,customers_repository: CustomersRepository = Depends(CustomersRepository), db:AsyncSession = Depends(get_db))-> CustomersBase:
+#     id_customer = await get_customer_value(customer_id,customers_repository,db)
+#     buy = await create_pay(PaymentBase(Id_Orders=,Bills=,Status=,Amount=,Payment_Date=))
+#     customers_dict = model_to_dict(new_customer)
+#     return CustomersBase(**customers_dict)

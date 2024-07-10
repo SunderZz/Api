@@ -7,8 +7,8 @@ class Product(Base):
     __tablename__ = "product"
 
     Id_Product = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    Name = Column(String(50), nullable=False)
-    Description = Column(String(50))
+    Name = Column(String(100), nullable=False)
+    Description = Column(String(255))
     Price_ht = Column(DECIMAL(15, 2), nullable=False)
     Active = Column(Boolean, nullable=False)
     Date_activation = Column(TIMESTAMP)

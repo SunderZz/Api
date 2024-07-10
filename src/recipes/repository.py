@@ -41,8 +41,11 @@ class RecipesRepository:
         matching_recipes = []
 
         for recipe in all_recipes:
-            ingredients_list = recipe.ingredient.split()
-            if query.lower() in [ingredient.lower() for ingredient in ingredients_list]:
+            ingredients_list = [
+                ingredient.strip().lower()
+                for ingredient in recipe.ingredient.split(".")
+            ]
+            if query.lower() in ingredients_list:
                 matching_recipes.append(recipe)
 
         return matching_recipes if matching_recipes else None

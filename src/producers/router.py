@@ -1,25 +1,22 @@
-from datetime import datetime
-import users.models as models
-from typing import Annotated
-from .schema import ProducersBase
-from fastapi import APIRouter, Depends, status, HTTPException
+from .schema import ProducersBase, ProducersCreateBase, ProducersModifyBase
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
-from database import engine2, AsyncSessionLocal
-from common import model_to_dict
 from .repository import ProducersRepository
-from products.router import create_products
-from give.router import create_give
+from .services import (
+    get_producers_service,
+    get_producer_by_user_service,
+    get_user_by_producer_service,
+    create_producer_service,
+    update_producer_service,
+    create_product_by_producer_service,
+)
 from products.repository import ProductRepository
-from products.schema import ProductBase
+from products.schema import ProductBase, ProductIdBase
 from give.repository import GiveRepository
-from products.schema import ProductIdBase
-from give.schema import GiveBase
 from is_on.repository import IsOnRepository
 from unit.schema import UnitBase
-from unit.router import create_unity
 from unit.repository import UnitRepository
-
 
 router = APIRouter(tags=["producers"])
 
@@ -31,50 +28,36 @@ async def get_producers(
     produit_repository: ProducersRepository = Depends(ProducersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[ProducersBase]:
-    producers = await produit_repository.get_producers(db)
-    producers_list = [model_to_dict(producer) for producer in producers]
-    return [ProducersBase(**producer_dict) for producer_dict in producers_list]
+    return await get_producers_service(produit_repository, db)
 
 
 @router.get("/producers/{producers}", response_model=ProducersBase | None)
-async def get_producer_value(
+async def get_producer_by_user(
     producers: str,
     producers_repository: ProducersRepository = Depends(ProducersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProducersBase | None:
-    value = await producers_repository.get_producers_query(db, producers)
-    if value is None:
-        return None
-    producer_dict = model_to_dict(value)
-
-    return ProducersBase(**producer_dict)
+    return await get_producer_by_user_service(producers, producers_repository, db)
 
 
 @router.get("/producers_user", response_model=ProducersBase | None)
-async def get_producer_in_user(
+async def get_user_by_producer(
     producers: str,
     producers_repository: ProducersRepository = Depends(ProducersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProducersBase | None:
-    value = await producers_repository.get_user_query(db, producers)
-    if value is None:
-        return None
-    producer_dict = model_to_dict(value)
-
-    return ProducersBase(**producer_dict)
+    return await get_user_by_producer_service(producers, producers_repository, db)
 
 
 @router.post(
     "/producers/", status_code=status.HTTP_201_CREATED, response_model=ProducersBase
 )
 async def create_producer(
-    producer: ProducersBase,
+    producer: ProducersCreateBase,
     producers_repository: ProducersRepository = Depends(ProducersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProducersBase:
-    new_producer = await producers_repository.create_producers(db, producer)
-    producer_dict = model_to_dict(new_producer)
-    return ProducersBase(**producer_dict)
+    return await create_producer_service(producer, producers_repository, db)
 
 
 @router.put(
@@ -84,17 +67,11 @@ async def create_producer(
 )
 async def update_producer(
     producer_id: int,
-    producer: ProducersBase,
+    producer: ProducersModifyBase,
     producer_repository: ProducersRepository = Depends(ProducersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProducersBase:
-    updated_producer = await producer_repository.update_producers(
-        db, producer_id, producer
-    )
-    if updated_producer is None:
-        raise HTTPException(status_code=404, detail="produit_image not found")
-    produit_image_dict = model_to_dict(updated_producer)
-    return ProducersBase(**produit_image_dict)
+    return await update_producer_service(producer_id, producer, producer_repository, db)
 
 
 @router.post(
@@ -115,21 +92,16 @@ async def create_product_by_producer(
     products_repository: ProductRepository = Depends(ProductRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProductIdBase:
-    product = await create_products(
-        season, products, is_on_repository, products_repository, db
-    )
-    Timestamp = datetime.now().isoformat()
-    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
-    unity = await create_unity(unit, unit_repository, db)
-    await create_give(
-        GiveBase(
-            Id_Producers=producer_id,
-            Id_Unit=unity.Id_Unit,
-            Id_Product=product.Id_Product,
-            Quantity=quantity,
-            Given_Date=given_date_exact,
-        ),
+    return await create_product_by_producer_service(
+        quantity,
+        producer_id,
+        unit,
+        season,
+        products,
         give_repository,
+        unit_repository,
+        is_on_repository,
+        producers_repository,
+        products_repository,
         db,
     )
-    return product

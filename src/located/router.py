@@ -1,12 +1,14 @@
-import season.models as models
 from database import get_db
-from typing import Annotated
 from .schema import LocatedBase
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import engine2, AsyncSessionLocal
 from .repository import LocatedRepository
-from common import model_to_dict
+from .services import (
+    get_locateds_service,
+    get_located_by_ids_service,
+    create_located_service,
+    update_located_service,
+)
 
 router = APIRouter(tags=["located"])
 
@@ -18,9 +20,7 @@ async def get_locateds(
     located_repository: LocatedRepository = Depends(LocatedRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[LocatedBase]:
-    locateds = await located_repository.get_located(db)
-    locateds_list = [model_to_dict(located) for located in locateds]
-    return [LocatedBase(**located_dict) for located_dict in locateds_list]
+    return await get_locateds_service(located_repository, db)
 
 
 @router.get(
@@ -31,10 +31,7 @@ async def get_located_by_ids(
     located_repository: LocatedRepository = Depends(LocatedRepository),
     db: AsyncSession = Depends(get_db),
 ) -> LocatedBase:
-    located = await located_repository.get_located_by_id(db, located_id)
-    if located is None:
-        return None
-    return LocatedBase(**model_to_dict(located))
+    return await get_located_by_ids_service(located_id, located_repository, db)
 
 
 @router.post(
@@ -45,14 +42,7 @@ async def create_located(
     located_repository: LocatedRepository = Depends(LocatedRepository),
     db: AsyncSession = Depends(get_db),
 ) -> LocatedBase:
-    id_code = located.Id_Users_adresses
-    existing_code_postal = await get_located_by_ids(id_code, located_repository, db)
-    if existing_code_postal is not None:
-        return existing_code_postal
-    else:
-        new_located = await located_repository.create_located(db, located)
-        located_dict = model_to_dict(new_located)
-        return LocatedBase(**located_dict)
+    return await create_located_service(located, located_repository, db)
 
 
 @router.put(
@@ -64,8 +54,4 @@ async def update_located(
     located_repository: LocatedRepository = Depends(LocatedRepository),
     db: AsyncSession = Depends(get_db),
 ) -> LocatedBase:
-    updated_located = await located_repository.update_located(db, located_id, located)
-    if updated_located is None:
-        raise HTTPException(status_code=404, detail="located not found")
-    located_dict = model_to_dict(updated_located)
-    return LocatedBase(**located_dict)
+    return await update_located_service(located_id, located, located_repository, db)

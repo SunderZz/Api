@@ -7,5 +7,5 @@ class City(Base):
     __tablename__ = "city"
 
     Id_City = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    Name = Column(String(50), nullable=False)
+    Name = Column(String(128), nullable=False)
     got = relationship("Got", back_populates="city")

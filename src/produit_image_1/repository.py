@@ -10,7 +10,7 @@ class ProduitImageRepository:
 
     async def get_produit_image_query(
         self, db: AsyncSession, produit_image: int
-    ) -> Produit_Image:
+    ) -> Produit_Image | None:
         result = await db.execute(
             select(Produit_Image).filter(
                 Produit_Image.Id_Produit_Image == produit_image

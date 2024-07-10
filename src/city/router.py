@@ -8,17 +8,21 @@ from .services import (
     get_city_by_name_service,
     get_city_by_id_service,
     create_city_service,
-    update_city_service
+    update_city_service,
 )
 
 router = APIRouter(tags=["city"])
 
-@router.get("/all_city/", status_code=status.HTTP_200_OK, response_model=list[CityIdBase])
+
+@router.get(
+    "/all_city/", status_code=status.HTTP_200_OK, response_model=list[CityIdBase]
+)
 async def get_cities(
     city_repository: CityRepository = Depends(CityRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[CityIdBase]:
     return await get_cities_service(city_repository, db)
+
 
 @router.get("/city_by_name/", response_model=CityIdBase)
 async def get_city_by_names(
@@ -28,6 +32,7 @@ async def get_city_by_names(
 ) -> CityIdBase:
     return await get_city_by_name_service(city, city_repository, db)
 
+
 @router.get("/city_with_id/", response_model=CityBase)
 async def get_city_with_ids(
     city: int,
@@ -36,6 +41,7 @@ async def get_city_with_ids(
 ) -> CityBase:
     return await get_city_by_id_service(city, city_repository, db)
 
+
 @router.post("/city/", status_code=status.HTTP_201_CREATED, response_model=CityIdBase)
 async def create_city(
     city: CityBase,
@@ -43,6 +49,7 @@ async def create_city(
     db: AsyncSession = Depends(get_db),
 ) -> CityIdBase:
     return await create_city_service(city, city_repository, db)
+
 
 @router.put("/city/{city_id}", status_code=status.HTTP_200_OK, response_model=CityBase)
 async def update_city(

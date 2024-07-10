@@ -8,7 +8,7 @@ from .services import (
     get_code_postal_id_service,
     create_code_postales_service,
     update_code_postal_service,
-    get_city_by_code_service
+    get_city_by_code_service,
 )
 from city.schema import CityBase
 from city.repository import CityRepository
@@ -16,12 +16,16 @@ from got_3.repository import GotRepository
 
 router = APIRouter(tags=["code_postal"])
 
-@router.get("/code_postal/", status_code=status.HTTP_200_OK, response_model=list[CodePostalBase])
+
+@router.get(
+    "/code_postal/", status_code=status.HTTP_200_OK, response_model=list[CodePostalBase]
+)
 async def get_code_postal(
     code_postal_repository: CodePostalRepository = Depends(CodePostalRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[CodePostalBase]:
     return await get_code_postal_service(code_postal_repository, db)
+
 
 @router.get("/code_postal/{code_postal}", response_model=CodePostalIdBase)
 async def get_code_postal_id(
@@ -31,6 +35,7 @@ async def get_code_postal_id(
 ) -> CodePostalIdBase:
     return await get_code_postal_id_service(code_postal, code_postal_repository, db)
 
+
 @router.get("/code_postal_name_by_id/", response_model=CodePostalIdBase)
 async def get_code_postal_name(
     code_postal: int,
@@ -38,6 +43,7 @@ async def get_code_postal_name(
     db: AsyncSession = Depends(get_db),
 ) -> CodePostalIdBase:
     return await get_code_postal_id_service(code_postal, code_postal_repository, db)
+
 
 @router.get("/code_postal_informations/", response_model=CodePostalIdBase)
 async def get_code_postal_with_id(
@@ -47,7 +53,12 @@ async def get_code_postal_with_id(
 ) -> CodePostalIdBase:
     return await get_code_postal_id_service(code_postal, code_postal_repository, db)
 
-@router.post("/code_postal/", status_code=status.HTTP_201_CREATED, response_model=CodePostalIdBase)
+
+@router.post(
+    "/code_postal/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=CodePostalIdBase,
+)
 async def create_code_postales(
     code_postal: CodePostalBase,
     code_postal_repository: CodePostalRepository = Depends(CodePostalRepository),
@@ -55,14 +66,22 @@ async def create_code_postales(
 ) -> CodePostalIdBase:
     return await create_code_postales_service(code_postal, code_postal_repository, db)
 
-@router.put("/code_postal/{code_postal_id}", status_code=status.HTTP_200_OK, response_model=CodePostalIdBase)
+
+@router.put(
+    "/code_postal/{code_postal_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=CodePostalIdBase,
+)
 async def update_code_postal(
     code_postal_id: int,
     code_postal: CodePostalBase,
     code_postal_repository: CodePostalRepository = Depends(CodePostalRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CodePostalIdBase:
-    return await update_code_postal_service(code_postal_id, code_postal, code_postal_repository, db)
+    return await update_code_postal_service(
+        code_postal_id, code_postal, code_postal_repository, db
+    )
+
 
 @router.get("/code_postal_city/", response_model=CityBase | list[CityBase])
 async def get_city_by_code(

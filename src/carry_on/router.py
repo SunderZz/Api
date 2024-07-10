@@ -1,12 +1,14 @@
-import season.models as models
 from database import get_db
-from typing import Annotated
 from .schema import CarryOnBase
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import engine2, AsyncSessionLocal
 from .repository import CarryOnRepository
-from common import model_to_dict
+from .services import (
+    get_carry_ons_service,
+    get_carry_on_by_id_service,
+    create_carry_on_service,
+    update_carry_on_service,
+)
 
 router = APIRouter(tags=["carry_on"])
 
@@ -14,13 +16,11 @@ router = APIRouter(tags=["carry_on"])
 @router.get(
     "/carry_on/", status_code=status.HTTP_200_OK, response_model=list[CarryOnBase]
 )
-async def get_carry_onoses(
+async def get_carry_ons(
     carry_on_repository: CarryOnRepository = Depends(CarryOnRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[CarryOnBase]:
-    carry_ons = await carry_on_repository.get_carry_on(db)
-    carry_ons_list = [model_to_dict(carry_on) for carry_on in carry_ons]
-    return [CarryOnBase(**carry_on_dict) for carry_on_dict in carry_ons_list]
+    return await get_carry_ons_service(carry_on_repository, db)
 
 
 @router.get(
@@ -31,10 +31,7 @@ async def get_carry_onose_by_id(
     carry_on_repository: CarryOnRepository = Depends(CarryOnRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CarryOnBase | None:
-    carry_on = await carry_on_repository.get_carry_by_id(db, carry_on_id)
-    if carry_on is None:
-        return None
-    return CarryOnBase(**model_to_dict(carry_on))
+    return await get_carry_on_by_id_service(carry_on_id, carry_on_repository, db)
 
 
 @router.post(
@@ -46,12 +43,7 @@ async def create_carry_on(
     carry_on_repository: CarryOnRepository = Depends(CarryOnRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CarryOnBase:
-    existing_carry_on = await carry_on_repository.get_carry_by_id(db, carry_on_id)
-    if existing_carry_on:
-        return existing_carry_on
-    new_carry_on = await carry_on_repository.create_carry_on(db, carry_on)
-    carry_on_dict = model_to_dict(new_carry_on)
-    return CarryOnBase(**carry_on_dict)
+    return await create_carry_on_service(carry_on, carry_on_id, carry_on_repository, db)
 
 
 @router.put(
@@ -65,10 +57,4 @@ async def update_carry_on(
     carry_on_repository: CarryOnRepository = Depends(CarryOnRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CarryOnBase:
-    updated_carry_on = await carry_on_repository.update_carry_on(
-        db, carry_on_id, carry_on
-    )
-    if updated_carry_on is None:
-        raise HTTPException(status_code=404, detail="carry_on not carry_on")
-    carry_on_dict = model_to_dict(updated_carry_on)
-    return CarryOnBase(**carry_on_dict)
+    return await update_carry_on_service(carry_on_id, carry_on, carry_on_repository, db)

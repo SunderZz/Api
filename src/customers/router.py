@@ -7,18 +7,22 @@ from .services import (
     get_customers_service,
     get_customer_value_service,
     create_customer_service,
-    update_customer_service
+    update_customer_service,
 )
 from orders.router import create_orders_from_user
 
 router = APIRouter(tags=["customers"])
 
-@router.get("/customers/", status_code=status.HTTP_200_OK, response_model=list[CustomersBase])
+
+@router.get(
+    "/customers/", status_code=status.HTTP_200_OK, response_model=list[CustomersBase]
+)
 async def get_customers(
     customers_repository: CustomersRepository = Depends(CustomersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> list[CustomersBase]:
     return await get_customers_service(customers_repository, db)
+
 
 @router.get("/customers_by_id", response_model=CustomersBase)
 async def get_customer_value(
@@ -28,7 +32,10 @@ async def get_customer_value(
 ) -> CustomersBase:
     return await get_customer_value_service(customers, customers_repository, db)
 
-@router.post("/customers/", status_code=status.HTTP_201_CREATED, response_model=CustomersBase)
+
+@router.post(
+    "/customers/", status_code=status.HTTP_201_CREATED, response_model=CustomersBase
+)
 async def create_customer(
     customer: CustomersBase,
     customers_repository: CustomersRepository = Depends(CustomersRepository),
@@ -36,16 +43,28 @@ async def create_customer(
 ) -> CustomersBase:
     return await create_customer_service(customer, customers_repository, db)
 
-@router.put("/customers/{customer_id}", status_code=status.HTTP_200_OK, response_model=CustomersBase)
+
+@router.put(
+    "/customers/{customer_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=CustomersBase,
+)
 async def update_customer(
     customer_id: int,
     customer: CustomersBase,
     customers_repository: CustomersRepository = Depends(CustomersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CustomersBase:
-    return await update_customer_service(customer_id, customer, customers_repository, db)
+    return await update_customer_service(
+        customer_id, customer, customers_repository, db
+    )
 
-@router.post("/customers/orders", status_code=status.HTTP_201_CREATED, response_model=CustomersBase)
+
+@router.post(
+    "/customers/orders",
+    status_code=status.HTTP_201_CREATED,
+    response_model=CustomersBase,
+)
 async def create_customer_orders(
     customer: CustomersBase,
     customers_repository: CustomersRepository = Depends(CustomersRepository),

@@ -1,271 +1,177 @@
-import users.models as models
-from datetime import datetime
-from typing import Annotated
-from .schema import AdminBase
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
-from database import engine2, AsyncSessionLocal
-from common import model_to_dict
+from .schema import AdminBase, AdminCreateBase
 from .repository import AdminRepository
+from .services import AdminService
 from users.schema import UserBase
 from products.schema import ProductBase
-from operate.router import create_operate, get_operate_by_id
-from operate.schema import OperateBase
-from operate.repository import OperateRepository
-from carry_on.router import create_carry_on, get_carry_onose_by_id
-from carry_on.schema import CarryOnBase
 from carry_on.repository import CarryOnRepository
-from manage.router import create_manage
-from manage.schema import ManageBase
 from manage.repository import ManageRepository
-from recipes.router import update_recipes
-from recipes.schema import RecipesBase
-from recipes.repository import RecipesRepository
-from redac.router import create_redact, update_redact
-from redac.schema import RedactBase
-from redac.repository import RedactRepository
-from customers.router import get_customer_value
-from customers.schema import CustomersBase
 from customers.repository import CustomersRepository
-from producers.router import get_producer_by_user
-from producers.schema import ProducersBase
 from producers.repository import ProducersRepository
+from recipes.repository import RecipesRepository
+from redac.repository import RedactRepository
+from operate.repository import OperateRepository
+from recipes.schema import RecipesBase
 
 router = APIRouter(tags=["admin"])
+
+
+def get_service(
+    admin_repository: AdminRepository = Depends(AdminRepository),
+) -> AdminService:
+    return AdminService(admin_repository)
 
 
 @router.get(
     "/admin/",
     status_code=status.HTTP_200_OK,
     response_model=list[AdminBase],
-    summary="Return all admin",
+    summary="Return all admins",
 )
 async def get_admin(
-    admin_repository: AdminRepository = Depends(AdminRepository),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db), service: AdminService = Depends(get_service)
 ) -> list[AdminBase]:
-    admin = await admin_repository.get_admin(db)
-    admin_list = [model_to_dict(user) for user in admin]
-    return [AdminBase(**admin_dict) for admin_dict in admin_list]
+    return await service.get_all_admins(db)
 
 
 @router.get(
-    "/admin/{admin}", response_model=AdminBase, summary="Return admin base on his id"
+    "/admin/{admin_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=AdminBase,
+    summary="Return admin by id",
 )
 async def get_admin_value(
-    admin: str,
-    admin_repository: AdminRepository = Depends(AdminRepository),
+    admin_id: str,
     db: AsyncSession = Depends(get_db),
+    service: AdminService = Depends(get_service),
 ) -> AdminBase:
-    value = await admin_repository.get_admin_query(db, admin)
-    if value is None:
-        raise HTTPException(
-            status_code=404, detail="admin not found or attribute not found"
-        )
-    admin_dict = model_to_dict(value)
-
-    return AdminBase(**admin_dict)
+    return await service.get_admin_by_id(db, admin_id)
 
 
 @router.post(
     "/admin/",
     status_code=status.HTTP_201_CREATED,
     response_model=AdminBase,
-    summary="Create new admin only accesible from db",
+    summary="Create new admin",
 )
 async def create_admin(
-    admin: AdminBase,
-    admin_repository: AdminRepository = Depends(AdminRepository),
+    admin: AdminCreateBase,
     db: AsyncSession = Depends(get_db),
+    service: AdminService = Depends(get_service),
 ) -> AdminBase:
-    new_admin = await admin_repository.create_admin(db, admin)
-    admin_dict = model_to_dict(new_admin)
-    return AdminBase(**admin_dict)
+    return await service.create_admin(db, admin)
 
 
 @router.put(
     "/admin/{admin_id}",
     status_code=status.HTTP_200_OK,
     response_model=AdminBase,
-    summary="Modify admin base on his id",
+    summary="Update admin by id",
 )
 async def update_admin(
     admin_id: int,
     admin: AdminBase,
-    admin_repository: AdminRepository = Depends(AdminRepository),
     db: AsyncSession = Depends(get_db),
+    service: AdminService = Depends(get_service),
 ) -> AdminBase:
-    updated_admin = await admin_repository.update_admin(db, admin_id, admin)
-    if updated_admin is None:
-        raise HTTPException(status_code=404, detail="admin not found")
-    admin_dict = model_to_dict(updated_admin)
-    return AdminBase(**admin_dict)
+    return await service.update_admin(db, admin_id, admin)
 
 
 @router.put(
     "/admin/products/active",
     status_code=status.HTTP_200_OK,
     response_model=ProductBase,
-    summary="Modify product",
+    summary="Update product active status",
 )
 async def update_product_active_status(
     product_id: int,
     admin_id: int,
     active: bool,
-    repository: AdminRepository = Depends(AdminRepository),
-    manage_repository: ManageRepository = Depends(ManageRepository),
     db: AsyncSession = Depends(get_db),
+    service: AdminService = Depends(get_service),
+    manage_repository: ManageRepository = Depends(ManageRepository),
 ) -> ProductBase:
-    product = await repository.update_product_active_status(db, product_id, active)
-    Timestamp = datetime.now().isoformat()
-    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
-
-    if product is None:
-        raise HTTPException(status_code=404, detail="Product not found")
-    await create_manage(
-        ManageBase(
-            Id_Admin=admin_id, Id_Product=product_id, Date_manage=given_date_exact
-        ),
-        product_id,
-        manage_repository,
-        db,
+    return await service.update_product_active_status(
+        db, product_id, active, admin_id, manage_repository
     )
-
-    product_dict = model_to_dict(product)
-    return ProductBase(**product_dict)
 
 
 @router.put(
     "/admin/user/active_state",
     status_code=status.HTTP_200_OK,
     response_model=UserBase,
-    summary="Modify active state on casual",
+    summary="Update user active state",
 )
-async def update_casual_active_status(
+async def update_user_active_status(
     user_id: int,
     admin_id: int,
     active: bool,
-    customer_repository: CustomersRepository = Depends(CustomersRepository),
-    repository: AdminRepository = Depends(AdminRepository),
-    operate_repository: OperateRepository = Depends(OperateRepository),
     db: AsyncSession = Depends(get_db),
+    service: AdminService = Depends(get_service),
+    customer_repository: CustomersRepository = Depends(CustomersRepository),
+    operate_repository: OperateRepository = Depends(OperateRepository),
 ) -> UserBase:
-    user = await repository.modify_user_active_status(db, user_id, active)
-    customer = await get_customer_value(user.Id_Users, customer_repository, db)
-    id_casual = customer.Id_Casual
-    exist_operate = await get_operate_by_id(id_casual, operate_repository, db)
-    if not exist_operate:
-        await create_operate(
-            OperateBase(Id_Admin=admin_id, Id_Casual=id_casual),
-            admin_id,
-            operate_repository,
-            db,
-        )
-
-    user_dict = model_to_dict(user)
-    return UserBase(**user_dict)
+    return await service.update_casual_active_status(
+        db, user_id, active, admin_id, customer_repository, operate_repository
+    )
 
 
 @router.put(
     "/admin/producers/active_state",
     status_code=status.HTTP_200_OK,
     response_model=UserBase,
-    summary="Modify active state on producers",
+    summary="Update producer active state",
 )
 async def update_producer_active_status(
     id_producers: int,
     admin_id: int,
     active: bool,
-    carry_on_repository: CarryOnRepository = Depends(CarryOnRepository),
-    repository: AdminRepository = Depends(AdminRepository),
-    producer_repository: ProducersRepository = Depends(ProducersRepository),
     db: AsyncSession = Depends(get_db),
+    service: AdminService = Depends(get_service),
+    carry_on_repository: CarryOnRepository = Depends(CarryOnRepository),
+    producer_repository: ProducersRepository = Depends(ProducersRepository),
 ) -> UserBase:
-    user = await repository.modify_user_active_status(db, id_producers, active)
-    Timestamp = datetime.now().isoformat()
-    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
-    producer = await get_producer_by_user(user.Id_Users, producer_repository, db)
-    id_prod = producer.Id_Producers
-    exist_carry_on = await get_carry_onose_by_id(id_prod, carry_on_repository, db)
-    if not exist_carry_on:
-        await create_carry_on(
-            CarryOnBase(
-                Id_Admin=admin_id, Id_Producers=id_prod, date_carry=given_date_exact
-            ),
-            id_prod,
-            carry_on_repository,
-            db,
-        )
-
-    user_dict = model_to_dict(user)
-    return UserBase(**user_dict)
+    return await service.update_producer_active_status(
+        db, id_producers, active, admin_id, carry_on_repository, producer_repository
+    )
 
 
 @router.post(
     "/admin/recipes",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_201_CREATED,
     response_model=RecipesBase,
-    summary="Create a new recipes from an admin",
+    summary="Create a new recipe from admin",
 )
 async def create_recipes_from_admin(
     admin_id: int,
     recipes: RecipesBase,
+    db: AsyncSession = Depends(get_db),
+    service: AdminService = Depends(get_service),
     recipes_repository: RecipesRepository = Depends(RecipesRepository),
     redac_repository: RedactRepository = Depends(RedactRepository),
-    db: AsyncSession = Depends(get_db),
 ) -> RecipesBase:
-    recipes = await recipes_repository.create_Recipes(db, recipes)
-    if recipes is None:
-        raise HTTPException(status_code=404, detail="recipes not found")
-    Id_Recipes = recipes.Id_Recipes
-    new_operate = await create_redact(
-        admin_id,
-        Id_Recipes,
-        RedactBase(Id_Admin=admin_id, Id_Recipes=Id_Recipes),
-        redac_repository,
-        db,
+    return await service.create_recipes_from_admin(
+        db, admin_id, recipes, recipes_repository, redac_repository
     )
-    if not new_operate:
-        await update_recipes(
-            RedactBase(Id_Admin=admin_id, Id_Recipes=Id_Recipes),
-            Id_Recipes,
-            redac_repository,
-            db,
-        )
-
-    return recipes
 
 
 @router.put(
     "/admin/{id_recipes}/modify_recipes",
     status_code=status.HTTP_200_OK,
     response_model=RecipesBase,
-    summary="Modify a new recipes from an admin",
+    summary="Modify a recipe from admin",
 )
 async def update_recipes_from_admin(
     admin_id: int,
     id_recipes: int,
     recipes: RecipesBase,
+    db: AsyncSession = Depends(get_db),
+    service: AdminService = Depends(get_service),
     recipes_repository: RecipesRepository = Depends(RecipesRepository),
     redac_repository: RedactRepository = Depends(RedactRepository),
-    db: AsyncSession = Depends(get_db),
 ) -> RecipesBase:
-    recipes = await update_recipes(id_recipes, recipes, recipes_repository, db)
-    if recipes is None:
-        raise HTTPException(status_code=404, detail="recipes not found")
-    new_operate = await create_redact(
-        admin_id,
-        id_recipes,
-        RedactBase(Id_Admin=admin_id, Id_Recipes=id_recipes),
-        redac_repository,
-        db,
+    return await service.update_recipes_from_admin(
+        db, admin_id, id_recipes, recipes, recipes_repository, redac_repository
     )
-    if not new_operate:
-        await update_redact(
-            id_recipes,
-            RedactBase(Id_Admin=admin_id, Id_Recipes=id_recipes),
-            redac_repository,
-            db,
-        )
-    return recipes

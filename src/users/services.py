@@ -2,7 +2,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import UploadFile
 from adresse_types.router import (
-    get_adresses_type_user,
+    get_adresse_types_by_user,
 )
 from adresse_types.repository import AdresseTypesRepository
 from users_adresses.router import (
@@ -27,7 +27,7 @@ async def retrieve_user_address_service(
     adresse_type_repository: AdresseTypesRepository,
     db: AsyncSession,
 ) -> list[UsersAdressesBase]:
-    adresse_type = await get_adresses_type_user(user_id, adresse_type_repository, db)
+    adresse_type = await get_adresse_types_by_user(user_id, adresse_type_repository, db)
     db_address = await get_user_addresse(
         adresse_type.Id_Users_adresses, user_adresse_repository, db
     )

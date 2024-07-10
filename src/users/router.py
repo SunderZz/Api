@@ -14,7 +14,7 @@ from users_adresses.router import (
     get_user_addresse,
 )
 from adresse_types.router import (
-    create_adresses_types,
+    create_adresse_type,
 )
 from customers.repository import CustomersRepository
 from producers.repository import ProducersRepository
@@ -171,5 +171,5 @@ async def create_address_type_for_user(
     adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
     db: AsyncSession = Depends(get_db),
 ) -> AdresseTypeBase:
-    db_address = await create_adresses_types(adresse_type, adresse_type_repository, db)
+    db_address = await create_adresse_type(adresse_type, adresse_type_repository, db)
     return db_address

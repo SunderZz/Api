@@ -1,11 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
+from datetime import datetime
 from .repository import ProductRepository
 from .schema import ProductBase, ProductIdBase, ProductRetrievedBase
 from common import model_to_dict
 from is_on.repository import IsOnRepository
 from is_on.router import create_is_on, update_is_on, get_is_on_by_id
 from is_on.schema import IsOnBase
+from give.router import update_give
+from give.schema import GiveCalcBase
+from give.repository import GiveRepository
 
 
 async def get_products_service(
@@ -112,11 +116,15 @@ async def create_products_service(
 async def update_product_service(
     product_id: int,
     product: ProductBase,
+    quantity: int,
     season: int | None,
     is_on_repository: IsOnRepository,
+    give_repository: GiveRepository,
     product_repository: ProductRepository,
     db: AsyncSession,
 ) -> ProductBase:
+    Timestamp = datetime.now().isoformat()
+    given_date_exact = datetime.strptime(Timestamp, "%Y-%m-%dT%H:%M:%S.%f").date()
     updated_product = await product_repository.update_product(db, product_id, product)
     if updated_product is None:
         raise HTTPException(status_code=404, detail="produit_image not found")
@@ -124,6 +132,14 @@ async def update_product_service(
         product_id,
         IsOnBase(Id_Product=updated_product.Id_Product, Id_Season=season),
         is_on_repository,
+        db,
+    )
+    await update_give(
+        product_id,
+        GiveCalcBase(
+            Id_Product=product_id, Quantity=quantity, Given_Date=given_date_exact
+        ),
+        give_repository,
         db,
     )
     produit_image_dict = model_to_dict(updated_product)

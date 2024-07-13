@@ -16,9 +16,9 @@ class GotRepository:
         result = await db.execute(select(Got))
         return result.scalars().all()
 
-    async def get_got_by_id(self, db: AsyncSession, id: int) -> list[Got]:
+    async def get_got_by_id(self, db: AsyncSession, id: int) -> Got:
         result = await db.execute(select(Got).filter(Got.Id_Code_Postal == id))
-        return result.scalars().all()
+        return result.scalar_one_or_none()
 
     async def update_got(
         self, db: AsyncSession, got: Got, id: int | None = None

@@ -18,11 +18,11 @@ class AdresseTypesRepository:
 
     async def get_adressestypes_user(
         self, db: AsyncSession, id_user: int
-    ) -> list[Adresse_Type]:
+    ) -> Adresse_Type:
         result = await db.execute(
             select(Adresse_Type).filter(Adresse_Type.Id_Users == id_user)
         )
-        return result.scalars().all()
+        return result.scalar_one_or_none()
 
     async def create_adressestypes(
         self, db: AsyncSession, adressestypes: Adresse_Type

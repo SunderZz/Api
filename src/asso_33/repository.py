@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 
 class Asso_33Repository:
 
-    async def create_asso_33(self, db: AsyncSession, asso: Asso_33) -> Asso_33:
+    async def create_assos_33(self, db: AsyncSession, asso: Asso_33) -> Asso_33:
         db_given = Asso_33(**asso.dict())
         db.add(db_given)
         await db.commit()

@@ -57,7 +57,6 @@ async def get_user_position(authorize: bool):
     return None
 
 
-# create user adresse
 async def create_user_address_service(
     Adresse: str,
     Phone: str,

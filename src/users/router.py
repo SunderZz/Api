@@ -153,15 +153,18 @@ async def retrieve_adresse_information(
     return db_address
 
 
-@router.get("/users/{user_id}/addresses", response_model=list[UsersAdressesBase])
+@router.get(
+    "/users/{user_id}/addresses",
+    response_model=list[UsersAdressesBase] | UsersAdressesBase,
+)
 async def retrieve_user_address(
     user_id: int,
     user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),
     adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
     db: AsyncSession = Depends(get_db),
-) -> list[UsersAdressesBase]:
+) -> list[UsersAdressesBase] | UsersAdressesBase:
     return await retrieve_user_address_service(
-        user_id, user_adresse_repository, adresse_type_repository, db
+        db, user_id, user_adresse_repository, adresse_type_repository
     )
 
 

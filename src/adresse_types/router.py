@@ -3,15 +3,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
 from .schema import AdresseTypeBase
 from .repository import AdresseTypesRepository
-from .services import AdresseTypesService
+from .services import (
+    get_adresse_type_by_id_services,
+    get_adresse_types_by_user_services,
+    get_all_adresse_types_services,
+    create_adresse_type_services,
+    update_adresse_type_services,
+)
 
 router = APIRouter(tags=["adresse_types"])
-
-
-def get_service(
-    adresse_types_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
-) -> AdresseTypesService:
-    return AdresseTypesService(adresse_types_repository)
 
 
 @router.get(
@@ -21,18 +21,20 @@ def get_service(
 )
 async def get_adresses_types(
     db: AsyncSession = Depends(get_db),
-    service: AdresseTypesService = Depends(get_service),
+    adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
 ) -> list[AdresseTypeBase]:
-    return await service.get_all_adresse_types(db)
+    return await get_all_adresse_types_services(db, adresse_type_repository)
 
 
 @router.get("/adresses_types/{adresse_type_id}", response_model=AdresseTypeBase)
 async def get_adresse_type_by_id(
-    adresse_type_id: str,
+    adresse_type_id: int,
     db: AsyncSession = Depends(get_db),
-    service: AdresseTypesService = Depends(get_service),
+    adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
 ) -> AdresseTypeBase:
-    return await service.get_adresse_type_by_id(db, adresse_type_id)
+    return await get_adresse_type_by_id_services(
+        db, adresse_type_id, adresse_type_repository
+    )
 
 
 @router.get(
@@ -42,9 +44,11 @@ async def get_adresse_type_by_id(
 async def get_adresse_types_by_user(
     user_id: int,
     db: AsyncSession = Depends(get_db),
-    service: AdresseTypesService = Depends(get_service),
-) -> AdresseTypeBase | list[AdresseTypeBase]:
-    return await service.get_adresse_types_by_user(db, user_id)
+    adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
+) -> AdresseTypeBase:
+    return await get_adresse_types_by_user_services(
+        user_id, db, adresse_type_repository
+    )
 
 
 @router.post(
@@ -54,10 +58,10 @@ async def get_adresse_types_by_user(
 )
 async def create_adresse_type(
     adresse_type: AdresseTypeBase,
+    adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
     db: AsyncSession = Depends(get_db),
-    service: AdresseTypesService = Depends(get_service),
 ) -> AdresseTypeBase:
-    return await service.create_adresse_type(db, adresse_type)
+    return await create_adresse_type_services(adresse_type, db, adresse_type_repository)
 
 
 @router.put(
@@ -69,6 +73,8 @@ async def update_adresse_type(
     adresse_type_id: int,
     adresse_type: AdresseTypeBase,
     db: AsyncSession = Depends(get_db),
-    service: AdresseTypesService = Depends(get_service),
+    adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
 ) -> AdresseTypeBase:
-    return await service.update_adresse_type(db, adresse_type_id, adresse_type)
+    return await update_adresse_type_services(
+        db, adresse_type_id, adresse_type_repository, adresse_type
+    )

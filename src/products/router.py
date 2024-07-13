@@ -14,6 +14,7 @@ from .services import (
     update_product_service,
 )
 from is_on.repository import IsOnRepository
+from give.repository import GiveRepository
 
 router = APIRouter(tags=["products"])
 
@@ -114,11 +115,20 @@ async def create_products(
 async def update_product(
     product_id: int,
     product: ProductBase,
+    quantity: int,
     season: int | None = None,
     is_on_repository: IsOnRepository = Depends(IsOnRepository),
+    give_repository: GiveRepository = Depends(GiveRepository),
     product_repository: ProductRepository = Depends(ProductRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProductBase:
     return await update_product_service(
-        product_id, product, season, is_on_repository, product_repository, db
+        product_id,
+        product,
+        quantity,
+        season,
+        is_on_repository,
+        give_repository,
+        product_repository,
+        db,
     )

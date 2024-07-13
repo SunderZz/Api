@@ -20,7 +20,7 @@ async def get_code_postal_service(
 async def get_code_postal_id_service(
     code_postal: int, code_postal_repository: CodePostalRepository, db: AsyncSession
 ) -> CodePostalIdBase:
-    value = await code_postal_repository.get_code_postal_query(db, code_postal)
+    value = await code_postal_repository.get_code_postal_by_id(db, code_postal)
     if value is None:
         raise HTTPException(
             status_code=404, detail="code_postal not found or attribute not found"

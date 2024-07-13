@@ -11,7 +11,7 @@ from .services import (
     update_produit_image_service,
     save_image_to_server,
     get_image_from_hash,
-    replace_image_service
+    replace_image_service,
 )
 
 router = APIRouter(tags=["produit_image"])

@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Recipes
 from sqlalchemy.future import select
+from sqlalchemy import delete
 
 
 class RecipesRepository:
@@ -12,12 +13,12 @@ class RecipesRepository:
         result = await db.execute(select(Recipes).filter(Recipes.Id_Recipes == id))
         return result.scalar_one_or_none()
 
-    async def create_Recipes(self, db: AsyncSession, recipes: Recipes) -> Recipes:
-        db_recipes = Recipes(**recipes.dict())
-        db.add(db_recipes)
+    async def create_recipe(self, db: AsyncSession, recipes: Recipes) -> Recipes:
+        db_recipe = Recipes(**recipes.dict())
+        db.add(db_recipe)
         await db.commit()
-        await db.refresh(db_recipes)
-        return db_recipes
+        await db.refresh(db_recipe)
+        return db_recipe
 
     async def update_Recipes(
         self, db: AsyncSession, recipes_id: int, recipes_data: Recipes
@@ -49,3 +50,8 @@ class RecipesRepository:
                 matching_recipes.append(recipe)
 
         return matching_recipes if matching_recipes else None
+
+    async def delete_recipe(self, db: AsyncSession, recipe_id: int) -> None:
+        delete_recipe = delete(Recipes).where(Recipes.Id_Recipes == recipe_id)
+        await db.execute(delete_recipe)
+        await db.commit()

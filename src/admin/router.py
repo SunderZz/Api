@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
 from .schema import AdminBase, AdminCreateBase
 from .repository import AdminRepository
-from .services import AdminService
 from users.schema import UserBase
 from products.schema import ProductBase
 from carry_on.repository import CarryOnRepository
@@ -13,15 +12,22 @@ from producers.repository import ProducersRepository
 from recipes.repository import RecipesRepository
 from redac.repository import RedactRepository
 from operate.repository import OperateRepository
-from recipes.schema import RecipesBase
+from recipes.schema import RecipesBase, RecipesCreateBase
+
+from .services import (
+    update_recipes_from_admin_services,
+    create_recipes_from_admin_services,
+    update_producer_active_status_services,
+    update_casual_active_status_services,
+    update_product_active_status_services,
+    update_admin_services,
+    create_admin_services,
+    get_admin_by_id_services,
+    get_all_admins_services,
+    delete_recipe_service,
+)
 
 router = APIRouter(tags=["admin"])
-
-
-def get_service(
-    admin_repository: AdminRepository = Depends(AdminRepository),
-) -> AdminService:
-    return AdminService(admin_repository)
 
 
 @router.get(
@@ -31,9 +37,10 @@ def get_service(
     summary="Return all admins",
 )
 async def get_admin(
-    db: AsyncSession = Depends(get_db), service: AdminService = Depends(get_service)
+    db: AsyncSession = Depends(get_db),
+    admin_repository: AdminRepository = Depends(AdminRepository),
 ) -> list[AdminBase]:
-    return await service.get_all_admins(db)
+    return await get_all_admins_services(db, admin_repository)
 
 
 @router.get(
@@ -45,9 +52,9 @@ async def get_admin(
 async def get_admin_value(
     admin_id: str,
     db: AsyncSession = Depends(get_db),
-    service: AdminService = Depends(get_service),
+    admin_repository: AdminRepository = Depends(AdminRepository),
 ) -> AdminBase:
-    return await service.get_admin_by_id(db, admin_id)
+    return await get_admin_by_id_services(db, admin_id, admin_repository)
 
 
 @router.post(
@@ -59,9 +66,9 @@ async def get_admin_value(
 async def create_admin(
     admin: AdminCreateBase,
     db: AsyncSession = Depends(get_db),
-    service: AdminService = Depends(get_service),
+    admin_repository: AdminRepository = Depends(AdminRepository),
 ) -> AdminBase:
-    return await service.create_admin(db, admin)
+    return await create_admin_services(db, admin, admin_repository)
 
 
 @router.put(
@@ -74,9 +81,23 @@ async def update_admin(
     admin_id: int,
     admin: AdminBase,
     db: AsyncSession = Depends(get_db),
-    service: AdminService = Depends(get_service),
+    admin_repository: AdminRepository = Depends(AdminRepository),
 ) -> AdminBase:
-    return await service.update_admin(db, admin_id, admin)
+    return await update_admin_services(db, admin_id, admin, admin_repository)
+
+
+@router.delete(
+    "/admin/recipes/{recipe_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Delete recipe by id",
+)
+async def delete_recipe(
+    admin_id: int,
+    recipe_id: int,
+    db: AsyncSession = Depends(get_db),
+    recipe_repository: RecipesRepository = Depends(RecipesRepository),
+) -> None:
+    return await delete_recipe_service(db, admin_id, recipe_id, recipe_repository)
 
 
 @router.put(
@@ -90,11 +111,11 @@ async def update_product_active_status(
     admin_id: int,
     active: bool,
     db: AsyncSession = Depends(get_db),
-    service: AdminService = Depends(get_service),
+    admin_repository: AdminRepository = Depends(AdminRepository),
     manage_repository: ManageRepository = Depends(ManageRepository),
 ) -> ProductBase:
-    return await service.update_product_active_status(
-        db, product_id, active, admin_id, manage_repository
+    return await update_product_active_status_services(
+        db, product_id, active, admin_id, manage_repository, admin_repository
     )
 
 
@@ -109,12 +130,18 @@ async def update_user_active_status(
     admin_id: int,
     active: bool,
     db: AsyncSession = Depends(get_db),
-    service: AdminService = Depends(get_service),
+    admin_repository: AdminRepository = Depends(AdminRepository),
     customer_repository: CustomersRepository = Depends(CustomersRepository),
     operate_repository: OperateRepository = Depends(OperateRepository),
 ) -> UserBase:
-    return await service.update_casual_active_status(
-        db, user_id, active, admin_id, customer_repository, operate_repository
+    return await update_casual_active_status_services(
+        db,
+        user_id,
+        active,
+        admin_id,
+        customer_repository,
+        operate_repository,
+        admin_repository,
     )
 
 
@@ -129,12 +156,18 @@ async def update_producer_active_status(
     admin_id: int,
     active: bool,
     db: AsyncSession = Depends(get_db),
-    service: AdminService = Depends(get_service),
+    admin_repository: AdminRepository = Depends(AdminRepository),
     carry_on_repository: CarryOnRepository = Depends(CarryOnRepository),
     producer_repository: ProducersRepository = Depends(ProducersRepository),
 ) -> UserBase:
-    return await service.update_producer_active_status(
-        db, id_producers, active, admin_id, carry_on_repository, producer_repository
+    return await update_producer_active_status_services(
+        db,
+        id_producers,
+        active,
+        admin_id,
+        carry_on_repository,
+        producer_repository,
+        admin_repository,
     )
 
 
@@ -146,13 +179,12 @@ async def update_producer_active_status(
 )
 async def create_recipes_from_admin(
     admin_id: int,
-    recipes: RecipesBase,
+    recipes: RecipesCreateBase,
     db: AsyncSession = Depends(get_db),
-    service: AdminService = Depends(get_service),
     recipes_repository: RecipesRepository = Depends(RecipesRepository),
     redac_repository: RedactRepository = Depends(RedactRepository),
 ) -> RecipesBase:
-    return await service.create_recipes_from_admin(
+    return await create_recipes_from_admin_services(
         db, admin_id, recipes, recipes_repository, redac_repository
     )
 
@@ -168,10 +200,16 @@ async def update_recipes_from_admin(
     id_recipes: int,
     recipes: RecipesBase,
     db: AsyncSession = Depends(get_db),
-    service: AdminService = Depends(get_service),
+    admin_repository: AdminRepository = Depends(AdminRepository),
     recipes_repository: RecipesRepository = Depends(RecipesRepository),
     redac_repository: RedactRepository = Depends(RedactRepository),
 ) -> RecipesBase:
-    return await service.update_recipes_from_admin(
-        db, admin_id, id_recipes, recipes, recipes_repository, redac_repository
+    return await update_recipes_from_admin_services(
+        db,
+        admin_id,
+        id_recipes,
+        recipes,
+        recipes_repository,
+        redac_repository,
+        admin_repository,
     )

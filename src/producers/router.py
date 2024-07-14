@@ -33,7 +33,7 @@ async def get_producers(
 
 @router.get("/producers/{producers}", response_model=ProducersBase | None)
 async def get_producer_by_user(
-    producers: str,
+    producers: int,
     producers_repository: ProducersRepository = Depends(ProducersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProducersBase | None:
@@ -42,7 +42,7 @@ async def get_producer_by_user(
 
 @router.get("/producers_user", response_model=ProducersBase | None)
 async def get_user_by_producer(
-    producers: str,
+    producers: int,
     producers_repository: ProducersRepository = Depends(ProducersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProducersBase | None:

@@ -16,6 +16,9 @@ from users_adresses.router import (
 from adresse_types.router import (
     create_adresse_type,
 )
+from producers.router import (
+    get_user_by_producer,
+)
 from customers.repository import CustomersRepository
 from producers.repository import ProducersRepository
 from adresse_types.schema import AdresseTypeBase
@@ -176,3 +179,23 @@ async def create_address_type_for_user(
 ) -> AdresseTypeBase:
     db_address = await create_adresse_type(adresse_type, adresse_type_repository, db)
     return db_address
+
+
+@router.get(
+    "/user_by_producer",
+    response_model=UserBase,
+    description="retrieve informations of an user",
+)
+async def get_user(
+    producer_id: int,
+    user_repository: UsersRepository = Depends(UsersRepository),
+    producer_repository: ProducersRepository = Depends(ProducersRepository),
+    db: AsyncSession = Depends(get_db),
+) -> UserBase:
+    test = await get_user_by_producer(producer_id, producer_repository, db)
+    user_query = test.Id_Users
+    user = await user_repository.get_user(db, user_query)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    user_dict = model_to_dict(user)
+    return UserBase(**user_dict)

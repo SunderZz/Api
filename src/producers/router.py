@@ -31,13 +31,13 @@ async def get_producers(
     return await get_producers_service(produit_repository, db)
 
 
-@router.get("/producers/{producers}", response_model=ProducersBase | None)
+@router.get("/producers_by_user/{user_id}", response_model=ProducersBase | None)
 async def get_producer_by_user(
-    producers: int,
+    user_id: int,
     producers_repository: ProducersRepository = Depends(ProducersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> ProducersBase | None:
-    return await get_producer_by_user_service(producers, producers_repository, db)
+    return await get_producer_by_user_service(user_id, producers_repository, db)
 
 
 @router.get("/producers_user", response_model=ProducersBase | None)

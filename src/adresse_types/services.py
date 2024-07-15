@@ -30,10 +30,10 @@ async def get_adresse_type_by_id_services(
 
 async def get_adresse_types_by_user_services(
     user_id: int, db: AsyncSession, adresse_types_repository: AdresseTypesRepository
-) -> AdresseTypeBase:
+) -> AdresseTypeBase | None:
     adresse_types = await adresse_types_repository.get_adressestypes_user(db, user_id)
     if not adresse_types:
-        raise HTTPException(status_code=404, detail="AdresseType not found")
+        return None
 
     return AdresseTypeBase(**model_to_dict(adresse_types))
 

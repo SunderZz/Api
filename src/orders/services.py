@@ -126,41 +126,13 @@ async def valid_orders_card_service(
     if isinstance(card, list):
         for object in card:
             product = await get_give_by_id(object.Id_Product, give_repository, db)
-            for prod in product:
-                updated_quantity = prod.Quantity - object.qte
-                if updated_quantity < 0:
-                    raise HTTPException(
-                        status_code=403, detail="Capacity not authorize"
-                    )
-                await update_give(
-                    object.Id_Product,
-                    GiveCalcBase(
-                        Id_Product=object.Id_Product,
-                        Quantity=updated_quantity,
-                        Given_Date=given_date_exact,
-                    ),
-                    give_repository,
-                    db,
-                )
-        order_final = await update_orders_service(
-            order,
-            OrdersBase(
-                Command_Date=given_date_exact, Status=False, Id_Casual=id_customers
-            ),
-            orders_repository,
-            db,
-        )
-        return order_final
-    else:
-        product = await get_give_by_id(card.Id_Product, give_repository, db)
-        for prod in product:
-            updated_quantity = prod.Quantity - card.qte
+            updated_quantity = product.Quantity - object.qte
             if updated_quantity < 0:
                 raise HTTPException(status_code=403, detail="Capacity not authorize")
             await update_give(
-                card.Id_Product,
+                object.Id_Product,
                 GiveCalcBase(
-                    Id_Product=card.Id_Product,
+                    Id_Product=object.Id_Product,
                     Quantity=updated_quantity,
                     Given_Date=given_date_exact,
                 ),
@@ -176,3 +148,25 @@ async def valid_orders_card_service(
             db,
         )
         return order_final
+    else:
+        product = await get_give_by_id(card.Id_Product, give_repository, db)
+        updated_quantity = product.Quantity - card.qte
+        if updated_quantity < 0:
+            raise HTTPException(status_code=403, detail="Capacity not authorize")
+        await update_give(
+            card.Id_Product,
+            GiveCalcBase(
+                Id_Product=card.Id_Product,
+                Quantity=updated_quantity,
+                Given_Date=given_date_exact,
+            ),
+            give_repository,
+            db,
+        )
+    order_final = await update_orders_service(
+        order,
+        OrdersBase(Command_Date=given_date_exact, Status=False, Id_Casual=id_customers),
+        orders_repository,
+        db,
+    )
+    return order_final

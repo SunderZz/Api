@@ -2,13 +2,20 @@ from fastapi import HTTPException, APIRouter, Depends, Form, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
-from users.schema import LogoutRequest, UserBase, UserCreate
+from users.schema import (
+    LogoutRequest,
+    UserBase,
+    UserCreate,
+    PasswordVerificationRequest,
+    UserModify,
+)
 from users.repository import UsersRepository
 from database import get_db
 from common import model_to_dict, validate_password
 from users.services import (
     retrieve_user_address_service,
     create_user_type_service,
+    modify_user_type_service,
 )
 from users_adresses.router import (
     get_user_addresse,
@@ -146,6 +153,53 @@ async def create_user_type(
     return user_id
 
 
+@router.put("/users/{user_id}", response_model=UserBase)
+async def update_user_type(
+    user_id: int,
+    firstName: str = Form(...),
+    lastName: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    summary: Optional[str] = Form(None),
+    isFarmer: bool = Form(...),
+    document: Optional[UploadFile] = File(None),
+    user_repository: UsersRepository = Depends(UsersRepository),
+    customers_repository: CustomersRepository = Depends(CustomersRepository),
+    producers_repository: ProducersRepository = Depends(ProducersRepository),
+    db: AsyncSession = Depends(get_db),
+) -> UserBase:
+    user = UserModify(F_Name=firstName, Name=lastName, Mail=email, Password=password)
+
+    if not validate_password(user.Password):
+        raise HTTPException(
+            status_code=400,
+            detail="Password must contain at least one uppercase letter, two digits, and one special character.",
+        )
+
+    user_post = await user_repository.update_user(db, user_id, user)
+    if user_post is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_dict = model_to_dict(user_post)
+    user_result = UserBase(**user_dict)
+
+    await modify_user_type_service(
+        firstName,
+        lastName,
+        email,
+        password,
+        summary,
+        isFarmer,
+        document,
+        user_result,
+        producers_repository,
+        customers_repository,
+        db,
+    )
+
+    return user_result
+
+
 @router.get("/adresse_of_user", response_model=list[UsersAdressesBase])
 async def retrieve_adresse_information(
     adresse_id: int,
@@ -199,3 +253,17 @@ async def get_user(
         raise HTTPException(status_code=404, detail="User not found")
     user_dict = model_to_dict(user)
     return UserBase(**user_dict)
+
+
+@router.post("/users/verify_password")
+async def verify_password(
+    request: PasswordVerificationRequest,
+    user_repository: UsersRepository = Depends(UsersRepository),
+    db: AsyncSession = Depends(get_db),
+) -> bool:
+    is_valid = await user_repository.verify_password(
+        db, request.user_id, request.password
+    )
+    if is_valid:
+        return True
+    raise HTTPException(status_code=400, detail="Invalid password")

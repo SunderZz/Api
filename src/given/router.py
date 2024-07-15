@@ -40,14 +40,14 @@ async def get_given_by_id(
 @router.get(
     "/get_notice_by_id",
     status_code=status.HTTP_200_OK,
-    response_model=NoticeBase | list[NoticeBase] | None,
+    response_model=list[NoticeBase] | None,
 )
 async def get_notice_by_product(
     product: int,
     given_repository: GivenRepository = Depends(GivenRepository),
     notice_repository: NoticeRepository = Depends(NoticeRepository),
     db: AsyncSession = Depends(get_db),
-) -> NoticeBase | list[NoticeBase] | None:
+) -> list[NoticeBase] | None:
     return await get_notice_by_product_service(
         product, given_repository, notice_repository, db
     )

@@ -81,3 +81,11 @@ class UsersRepository:
             await db.refresh(user)
             return user
         return None
+
+    async def verify_password(
+        self, db: AsyncSession, user_id: str, password: str
+    ) -> bool:
+        user = await self.get_user(db, user_id)
+        if user and pwd_context.verify(password, user.Password):
+            return True
+        return False

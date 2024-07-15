@@ -22,7 +22,7 @@ class GivenRepository:
 
     async def get_notice_by_product(
         self, db: AsyncSession, product: int
-    ) -> list[Given] | Given | None:
+    ) -> list[Given] | None:
         result = await db.execute(select(Given).filter(Given.Id_Product == product))
         return result.scalars().all()
 

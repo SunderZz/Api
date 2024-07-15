@@ -26,9 +26,9 @@ async def get_producers_service(
 
 
 async def get_producer_by_user_service(
-    producers: int, producers_repository: ProducersRepository, db: AsyncSession
+    user_id: int, producers_repository: ProducersRepository, db: AsyncSession
 ) -> ProducersBase | None:
-    value = await producers_repository.get_user_query(db, producers)
+    value = await producers_repository.get_producer_query(db, user_id)
     if value is None:
         return None
     producer_dict = model_to_dict(value)

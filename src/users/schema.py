@@ -31,3 +31,8 @@ class UserModify(BaseModel):
 
 class LogoutRequest(BaseModel):
     user_id: int
+
+
+class PasswordVerificationRequest(BaseModel):
+    password: str
+    user_id: int

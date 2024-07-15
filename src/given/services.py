@@ -33,9 +33,8 @@ async def get_notice_by_product_service(
     given_repository: GivenRepository,
     notice_repository: NoticeRepository,
     db: AsyncSession,
-) -> NoticeBase | list[NoticeBase] | None:
+) -> list[NoticeBase] | None:
     given = await given_repository.get_notice_by_product(db, product)
-    given_id = given.Id_Notice
     if given is None:
         return None
     if isinstance(given, list):
@@ -47,7 +46,6 @@ async def get_notice_by_product_service(
             if notice:
                 notices.append(notice)
         return notices if notices else None
-    return await get_notices_by_id_service(given_id, notice_repository, db)
 
 
 async def get_notices_by_id_service(

@@ -37,15 +37,12 @@ async def get_adresse_type_by_id(
     )
 
 
-@router.get(
-    "/adresses_types_by_user/{user_id}",
-    response_model=AdresseTypeBase | list[AdresseTypeBase],
-)
+@router.get("/adresses_types_by_user/{user_id}", response_model=AdresseTypeBase | None)
 async def get_adresse_types_by_user(
     user_id: int,
     db: AsyncSession = Depends(get_db),
     adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
-) -> AdresseTypeBase:
+) -> AdresseTypeBase | None:
     return await get_adresse_types_by_user_services(
         user_id, db, adresse_type_repository
     )

@@ -20,6 +20,12 @@ class ProducersRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_producer_query(self, db: AsyncSession, user_id: int) -> Producers:
+        result = await db.execute(
+            select(Producers).filter(Producers.Id_Users == user_id)
+        )
+        return result.scalar_one_or_none()
+
     async def create_producers(
         self, db: AsyncSession, producers: Producers
     ) -> Producers:

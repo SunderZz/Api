@@ -135,7 +135,6 @@ async def update_producer_active_status_services(
     admin_repository: AdminRepository,
 ) -> UserBase:
     producer = await get_producer_by_user(id_producers, producer_repository, db)
-    print(producer, "test")
     user = await admin_repository.modify_user_active_status(
         db, producer.Id_Users, active
     )
@@ -202,7 +201,6 @@ async def update_recipes_from_admin_services(
     updated_recipes = await update_recipes(id_recipes, recipes, recipes_repository, db)
     if not updated_recipes:
         raise HTTPException(status_code=404, detail="Recipes not found")
-    print()
     new_operate = await create_redact(
         admin_id,
         id_recipes,

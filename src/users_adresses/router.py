@@ -35,7 +35,7 @@ async def get_user_addresse(
     adresse_id: int,
     user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),
     db: AsyncSession = Depends(get_db),
-) -> list[UsersAdressesBase] | UsersAdressesBase:
+) -> list[UsersAdressesBase] | UsersAdressesBase | None:
     adresses = await user_adresse_repository.get_user_addresses(db, adresse_id)
     if not adresses:
         raise HTTPException(status_code=404, detail="addresses not found")

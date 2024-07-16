@@ -8,7 +8,7 @@ class UsersAdressesRepository:
 
     async def get_user_addresses(
         self, db: AsyncSession, user_id: int
-    ) -> list[Users_adresses]:
+    ) -> list[Users_adresses] | None:
         result = await db.execute(
             select(Users_adresses).filter(Users_adresses.Id_Users_adresses == user_id)
         )

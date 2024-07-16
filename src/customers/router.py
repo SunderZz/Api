@@ -1,4 +1,4 @@
-from .schema import CustomersBase
+from .schema import CustomersBase,CustomersUserBase
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
@@ -6,6 +6,7 @@ from .repository import CustomersRepository
 from .services import (
     get_customers_service,
     get_customer_value_service,
+    get_user_value_service,
     create_customer_service,
     update_customer_service,
 )
@@ -24,12 +25,20 @@ async def get_customers(
     return await get_customers_service(customers_repository, db)
 
 
-@router.get("/customers_by_id", response_model=CustomersBase)
-async def get_customer_value(
+@router.get("/user_by_id", response_model=CustomersBase)
+async def get_user_value(
     customers: int,
     customers_repository: CustomersRepository = Depends(CustomersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CustomersBase:
+    return await get_user_value_service(customers, customers_repository, db)
+
+@router.get("/customers_by_id", response_model=CustomersUserBase)
+async def get_customer_value(
+    customers: int,
+    customers_repository: CustomersRepository = Depends(CustomersRepository),
+    db: AsyncSession = Depends(get_db),
+) -> CustomersUserBase:
     return await get_customer_value_service(customers, customers_repository, db)
 
 

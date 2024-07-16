@@ -25,5 +25,4 @@ def scrape_weather():
 
         return weather_data
     else:
-        print(f"Cannot retrieve data: {response.status_code}")
         return []

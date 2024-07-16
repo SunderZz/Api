@@ -12,7 +12,7 @@ from .services import (
 )
 from notice.repository import NoticeRepository
 from give_1.repository import Give_1Repository
-from notice.schema import NoticeBase
+from notice.schema import NoticeBase,NoticeCreateBase
 from notice.router import get_notices_by_id
 
 router = APIRouter(tags=["given"])
@@ -40,14 +40,14 @@ async def get_given_by_id(
 @router.get(
     "/get_notice_by_id",
     status_code=status.HTTP_200_OK,
-    response_model=list[NoticeBase] | None,
+    response_model=list[NoticeCreateBase] | None,
 )
 async def get_notice_by_product(
     product: int,
     given_repository: GivenRepository = Depends(GivenRepository),
     notice_repository: NoticeRepository = Depends(NoticeRepository),
     db: AsyncSession = Depends(get_db),
-) -> list[NoticeBase] | None:
+) -> list[NoticeCreateBase] | None:
     return await get_notice_by_product_service(
         product, given_repository, notice_repository, db
     )

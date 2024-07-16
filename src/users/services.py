@@ -10,7 +10,7 @@ from users_adresses.router import (
 )
 from users_adresses.schema import UsersAdressesBase
 from users_adresses.repository import UsersAdressesRepository
-from customers.router import create_customer, get_customer_value, update_customer
+from customers.router import create_customer, update_customer,get_user_value
 from customers.schema import CustomersUserBase
 from customers.repository import CustomersRepository
 from producers.router import create_producer, get_producer_by_user, update_producer
@@ -26,8 +26,10 @@ async def retrieve_user_address_service(
     user_id: int,
     user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),
     adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
-) -> list[UsersAdressesBase] | UsersAdressesBase:
+) -> list[UsersAdressesBase] | UsersAdressesBase |None:
     adresse_type = await get_adresse_types_by_user(user_id, db, adresse_type_repository)
+    if not adresse_type:
+        return None
     db_address = await get_user_addresse(
         adresse_type.Id_Users_adresses, user_adresse_repository, db
     )
@@ -96,7 +98,7 @@ async def modify_user_type_service(
             db,
         )
     else:
-        customer_id = await get_customer_value(
+        customer_id = await get_user_value(
             user_id.Id_Users, customers_repository, db
         )
         await update_customer(

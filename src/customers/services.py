@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 from .repository import CustomersRepository
-from .schema import CustomersBase
+from .schema import CustomersBase,CustomersUserBase
 from common import model_to_dict
 
 
@@ -15,14 +15,23 @@ async def get_customers_service(
 
 async def get_customer_value_service(
     customers: int, customers_repository: CustomersRepository, db: AsyncSession
-) -> CustomersBase:
+) -> CustomersUserBase:
     value = await customers_repository.get_customers_query(db, customers)
     if value is None:
         raise HTTPException(
             status_code=404, detail="customer not found or attribute not found"
         )
-    return CustomersBase(**model_to_dict(value))
+    return CustomersUserBase(**model_to_dict(value))
 
+async def get_user_value_service(
+    customers: int, customers_repository: CustomersRepository, db: AsyncSession
+) -> CustomersBase:
+    value = await customers_repository.get_user_query(db, customers)
+    if value is None:
+        raise HTTPException(
+            status_code=404, detail="customer not found or attribute not found"
+        )
+    return CustomersBase(**model_to_dict(value))
 
 async def create_customer_service(
     customer: CustomersBase, customers_repository: CustomersRepository, db: AsyncSession

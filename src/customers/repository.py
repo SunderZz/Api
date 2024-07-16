@@ -10,6 +10,12 @@ class CustomersRepository:
 
     async def get_customers_query(self, db: AsyncSession, customers: int) -> Customers:
         result = await db.execute(
+            select(Customers).filter(Customers.Id_Casual == customers)
+        )
+        return result.scalar_one_or_none()
+    
+    async def get_user_query(self, db: AsyncSession, customers: int) -> Customers:
+        result = await db.execute(
             select(Customers).filter(Customers.Id_Users == customers)
         )
         return result.scalar_one_or_none()

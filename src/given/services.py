@@ -5,7 +5,7 @@ from .schema import GivenBase
 from common import model_to_dict
 from notice.repository import NoticeRepository
 from notice.router import create_notice
-from notice.schema import NoticeBase
+from notice.schema import NoticeBase,NoticeCreateBase
 from give_1.repository import Give_1Repository
 from give_1.router import create_Give_notice
 from give_1.schema import Give_1Base
@@ -33,7 +33,7 @@ async def get_notice_by_product_service(
     given_repository: GivenRepository,
     notice_repository: NoticeRepository,
     db: AsyncSession,
-) -> list[NoticeBase] | None:
+) -> list[NoticeCreateBase] | None:
     given = await given_repository.get_notice_by_product(db, product)
     if given is None:
         return None
@@ -50,11 +50,11 @@ async def get_notice_by_product_service(
 
 async def get_notices_by_id_service(
     notice_id: int, notice_repository: NoticeRepository, db: AsyncSession
-) -> NoticeBase:
+) -> NoticeCreateBase:
     notice = await notice_repository.get_notice_by_id(db, notice_id)
     if notice:
         notice_dict = model_to_dict(notice)
-        return NoticeBase(**notice_dict)
+        return NoticeCreateBase(**notice_dict)
     raise HTTPException(status_code=404, detail="Notice not found")
 
 

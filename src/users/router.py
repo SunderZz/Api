@@ -200,7 +200,7 @@ async def update_user_type(
     return user_result
 
 
-@router.get("/adresse_of_user", response_model=list[UsersAdressesBase])
+@router.get("/adresse_of_user", response_model=list[UsersAdressesBase] )
 async def retrieve_adresse_information(
     adresse_id: int,
     user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),
@@ -212,14 +212,14 @@ async def retrieve_adresse_information(
 
 @router.get(
     "/users/{user_id}/addresses",
-    response_model=list[UsersAdressesBase] | UsersAdressesBase,
+    response_model=list[UsersAdressesBase] | UsersAdressesBase |None,
 )
 async def retrieve_user_address(
     user_id: int,
     user_adresse_repository: UsersAdressesRepository = Depends(UsersAdressesRepository),
     adresse_type_repository: AdresseTypesRepository = Depends(AdresseTypesRepository),
     db: AsyncSession = Depends(get_db),
-) -> list[UsersAdressesBase] | UsersAdressesBase:
+) -> list[UsersAdressesBase] | UsersAdressesBase |None:
     return await retrieve_user_address_service(
         db, user_id, user_adresse_repository, adresse_type_repository
     )

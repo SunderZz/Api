@@ -1,5 +1,5 @@
 from .schema import ProduitImageBase
-from fastapi import APIRouter, Depends, status, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
@@ -13,6 +13,7 @@ from .services import (
     get_image_from_hash,
     replace_image_service,
 )
+import os
 
 router = APIRouter(tags=["produit_image"])
 
@@ -115,3 +116,17 @@ async def replace_produit_image(
     return await replace_image_service(
         produit_image_id, file, produit_image_repository, db
     )
+
+UPLOAD_DIRECTORY = "/web/fil_rouge"
+
+os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
+
+@router.post("/upload-image/")
+async def upload_image(file: UploadFile = File(...)):
+    try:
+        file_location = os.path.join(UPLOAD_DIRECTORY, file.filename)
+        with open(file_location, "wb") as f:
+            f.write(await file.read())
+        return {"info": f"file '{file.filename}' saved at '{file_location}'"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

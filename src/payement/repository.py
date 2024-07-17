@@ -10,7 +10,7 @@ class PaymentRepository:
 
     async def get_payment_query(self, db: AsyncSession, payment: int) -> Payment:
         result = await db.execute(
-            select(Payment).filter(Payment.Id_Payments == payment)
+            select(Payment).filter(Payment.Id_Orders == payment)
         )
         return result.scalar_one_or_none()
 

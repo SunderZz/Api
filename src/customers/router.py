@@ -79,7 +79,6 @@ async def create_customer_orders(
     customers_repository: CustomersRepository = Depends(CustomersRepository),
     db: AsyncSession = Depends(get_db),
 ) -> CustomersBase:
-    order = await create_orders_from_user()
     new_customer = await create_customer_service(customer, customers_repository, db)
     return new_customer
 

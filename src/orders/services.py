@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 from .repository import OrdersRepository
-from .schema import OrdersBase, OrdersIdBase
+from .schema import OrdersBase, OrdersIdBase,OrdersForBillsBase
 from common import model_to_dict
 from linede.router import create_linede_for_order, get_linede_by_id
 from linede.repository import LinedeRepository
@@ -32,6 +32,21 @@ async def get_orders_value_service(
         )
     orders_dict = model_to_dict(value)
     return OrdersBase(**orders_dict)
+
+async def get_customer_value_service(
+    id_casual: int, orders_repository: OrdersRepository, db: AsyncSession
+) -> OrdersForBillsBase|list[OrdersForBillsBase]:
+    value = await orders_repository.get_all_order_of_customer(db, id_casual)
+    if value is None:
+        raise HTTPException(
+            status_code=404, detail="orders not found or attribute not found"
+        )
+    if isinstance(value, list):
+        orders_list = [model_to_dict(orders) for orders in value]
+        return [OrdersForBillsBase(**orders_dict) for orders_dict in orders_list]
+    else:
+        orders_dict = model_to_dict(value)
+        return OrdersForBillsBase(**orders_dict)
 
 
 async def create_orders_from_user_service(

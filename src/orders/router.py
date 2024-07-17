@@ -1,4 +1,4 @@
-from .schema import OrdersBase, OrdersIdBase
+from .schema import OrdersBase, OrdersIdBase,OrdersForBillsBase
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
@@ -11,6 +11,7 @@ from .services import (
     create_orders_card_service,
     update_orders_card_service,
     valid_orders_card_service,
+    get_customer_value_service,
 )
 from linede.repository import LinedeRepository
 from linede.schema import LinedeBase
@@ -35,6 +36,14 @@ async def get_orders_value(
     db: AsyncSession = Depends(get_db),
 ) -> OrdersBase:
     return await get_orders_value_service(id_orders, orders_repository, db)
+
+@router.get("/orders_by_customers/", response_model=OrdersForBillsBase|list[OrdersForBillsBase])
+async def get_customers_order(
+    id_casual: int,
+    orders_repository: OrdersRepository = Depends(OrdersRepository),
+    db: AsyncSession = Depends(get_db),
+) -> OrdersForBillsBase|list[OrdersForBillsBase]:
+    return await get_customer_value_service(id_casual, orders_repository, db)
 
 
 @router.post(

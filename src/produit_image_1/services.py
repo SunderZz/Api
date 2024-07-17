@@ -81,6 +81,7 @@ async def save_image_to_server(file: UploadFile, produit_id: int) -> str:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
 async def get_image_from_hash(
     produit_image_repository: ProduitImageRepository,
     db: AsyncSession,

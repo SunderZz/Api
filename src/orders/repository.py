@@ -11,6 +11,10 @@ class OrdersRepository:
     async def get_orders_query(self, db: AsyncSession, id_orders: int) -> Orders:
         result = await db.execute(select(Orders).filter(Orders.Id_Orders == id_orders))
         return result.scalar_one_or_none()
+    
+    async def get_all_order_of_customer(self, db: AsyncSession, id_casual: int) -> Orders:
+        result = await db.execute(select(Orders).filter(Orders.Id_Casual == id_casual))
+        return result.scalars().all()
 
     async def create_orders(self, db: AsyncSession, orders: Orders) -> Orders:
         db_orders = Orders(**orders.dict())

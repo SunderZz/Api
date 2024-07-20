@@ -81,11 +81,3 @@ async def create_customer_orders(
 ) -> CustomersBase:
     new_customer = await create_customer_service(customer, customers_repository, db)
     return new_customer
-
-
-# @router.post("/customers/payment", status_code=status.HTTP_201_CREATED, response_model=CustomersBase)
-# async def create_customer_payment(customer_id:int,pay:PaymentBase,customer: CustomersBase,customers_repository: CustomersRepository = Depends(CustomersRepository), db:AsyncSession = Depends(get_db))-> CustomersBase:
-#     id_customer = await get_customer_value(customer_id,customers_repository,db)
-#     buy = await create_pay(PaymentBase(Id_Orders=,Bills=,Status=,Amount=,Payment_Date=))
-#     customers_dict = model_to_dict(new_customer)
-#     return CustomersBase(**customers_dict)

@@ -1,132 +1,99 @@
-from .schema import ProduitImageBase
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
-from fastapi.responses import FileResponse
+import ftplib
+from fastapi import APIRouter, Depends, Form, status, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
+from .schema import ProduitImageBase
 from .repository import ProduitImageRepository
 from .services import (
-    get_produit_images_service,
-    get_produit_image_value_service,
     create_produit_image_service,
-    update_produit_image_service,
-    save_image_to_server,
-    get_image_from_hash,
-    replace_image_service,
+    get_produit_image_by_id_and_field_service,
 )
 import os
+import hashlib
+from ftplib import FTP
+from dotenv import load_dotenv
+import tempfile
+from fastapi.responses import FileResponse
+
+load_dotenv()
 
 router = APIRouter(tags=["produit_image"])
 
+FTP_HOST = os.getenv("FTP_HOST")
+FTP_USER = os.getenv("FTP_USER")
+FTP_PASS = os.getenv("FTP_PASS")
+FTP_UPLOAD_FOLDER = os.getenv("FTP_UPLOAD_FOLDER")
 
-@router.get(
-    "/produit_image/",
-    status_code=status.HTTP_200_OK,
-    response_model=list[ProduitImageBase],
-)
-async def get_produit_images(
-    produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
-    db: AsyncSession = Depends(get_db),
-) -> list[ProduitImageBase]:
-    return await get_produit_images_service(produit_image_repository, db)
+def hash_key(product_id: str, field_name: str) -> str:
+    hash_object = hashlib.sha256(f"{product_id}_{field_name}".encode())
+    return hash_object.hexdigest()
 
+def hash_link(link: str) -> str:
+    hash_object = hashlib.sha256(link.encode())
+    return hash_object.hexdigest()
 
-@router.get("/produit_image/{produit_image}", response_model=ProduitImageBase | None)
-async def get_produit_image_value(
-    produit_image: str,
-    produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
-    db: AsyncSession = Depends(get_db),
-) -> ProduitImageBase | None:
-    return await get_produit_image_value_service(
-        produit_image, produit_image_repository, db
-    )
-
-
-@router.post(
-    "/produit_image/",
-    status_code=status.HTTP_201_CREATED,
-    response_model=ProduitImageBase,
-)
-async def create_produit_image(
-    produit_image: ProduitImageBase,
-    produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
-    db: AsyncSession = Depends(get_db),
-) -> ProduitImageBase:
-    return await create_produit_image_service(
-        produit_image, produit_image_repository, db
-    )
-
-
-@router.put(
-    "/produit_image/{produit_image_id}",
-    status_code=status.HTTP_200_OK,
-    response_model=ProduitImageBase,
-)
-async def update_produit_image(
-    produit_image_id: int,
-    produit_image: ProduitImageBase,
-    produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
-    db: AsyncSession = Depends(get_db),
-) -> ProduitImageBase:
-    return await update_produit_image_service(
-        produit_image_id, produit_image, produit_image_repository, db
-    )
-
-
-@router.post("/produit_image/upload/{produit_id}", status_code=status.HTTP_201_CREATED)
-async def upload_produit_image(
-    produit_id: int,
+@router.post("/produit_image/", status_code=status.HTTP_201_CREATED, response_model=ProduitImageBase)
+async def upload_file(
+    product_id: str = Form(...),
+    field_name: str = Form(...),
+    nom: str = Form(...),
     file: UploadFile = File(...),
-    produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
     db: AsyncSession = Depends(get_db),
+    produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository)
 ) -> ProduitImageBase:
-    file_url = await save_image_to_server(file, produit_id)
+    hashed_key = hash_key(product_id, field_name)
+    hashed_filename = hashed_key + ".png"
+    link = f"/images/{hashed_filename}"
+    hashed_link_value = hash_link(link)
 
-    produit_image_data = ProduitImageBase(Nom=file.filename, lien_image=file_url)
-    new_produit_image = await create_produit_image_service(
-        produit_image_data, produit_image_repository, db
-    )
+    temp_dir = tempfile.gettempdir()
+    file_location = os.path.join(temp_dir, hashed_filename)
+    
+    with open(file_location, "wb") as f:
+        f.write(file.file.read())
+    
+    with FTP(FTP_HOST) as ftp:
+        ftp.login(user=FTP_USER, passwd=FTP_PASS)
+        ftp.cwd(FTP_UPLOAD_FOLDER)
+        
+        with open(file_location, "rb") as f:
+            ftp.storbinary(f"STOR {hashed_filename}", f)
+    
+    os.remove(file_location)
+
+    produit_image_data = ProduitImageBase(Nom=nom, lien_image=hashed_filename)
+    new_produit_image = await create_produit_image_service(produit_image_data, produit_image_repository, db)
+
     return new_produit_image
 
-
-@router.get("/produit_image/download/{produit_image_id}", response_class=FileResponse)
-async def download_produit_image(
+@router.get("/produit_image/", status_code=status.HTTP_200_OK)
+async def get_image(
     produit_image_id: int,
-    produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
+    field_name: str,
     db: AsyncSession = Depends(get_db),
-) -> FileResponse:
-    file_path = await get_image_from_hash(
-        produit_image_repository, db, produit_image_id
-    )
-    if file_path is None:
-        return None
-    return FileResponse(file_path)
+    produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository)
+):
+    hashed_key = hash_key(produit_image_id, field_name)
+    hashed_filename = hashed_key + ".png"
+    produit_image = await get_produit_image_by_id_and_field_service(hashed_filename, produit_image_repository, db)
+    
+    if not produit_image:
+        raise HTTPException(status_code=404, detail="File not found")
 
+    temp_dir = tempfile.gettempdir()
+    local_file_path = os.path.join(temp_dir, hashed_filename)
 
-@router.put(
-    "/produit_image/replace/{produit_image_id}",
-    status_code=status.HTTP_200_OK,
-    response_model=ProduitImageBase,
-)
-async def replace_produit_image(
-    produit_image_id: int,
-    file: UploadFile = File(...),
-    produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository),
-    db: AsyncSession = Depends(get_db),
-) -> ProduitImageBase:
-    return await replace_image_service(
-        produit_image_id, file, produit_image_repository, db
-    )
+    with FTP(FTP_HOST) as ftp:
+        ftp.login(user=FTP_USER, passwd=FTP_PASS)
+        ftp.cwd(FTP_UPLOAD_FOLDER)
+        
+        with open(local_file_path, "wb") as f:
+            try:
+                ftp.retrbinary(f"RETR {hashed_filename}", f.write)
+            except ftplib.error_perm:
+                raise HTTPException(status_code=404, detail="File not found on FTP server")
 
-UPLOAD_DIRECTORY = "/web/fil_rouge"
+    if not os.path.exists(local_file_path):
+        raise HTTPException(status_code=404, detail="File not found locally")
 
-os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
-
-@router.post("/upload-image/")
-async def upload_image(file: UploadFile = File(...)):
-    try:
-        file_location = os.path.join(UPLOAD_DIRECTORY, file.filename)
-        with open(file_location, "wb") as f:
-            f.write(await file.read())
-        return {"info": f"file '{file.filename}' saved at '{file_location}'"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return FileResponse(local_file_path)

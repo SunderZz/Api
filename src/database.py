@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-URL_DATABASE2 = "mysql+aiomysql://root:@localhost:3306/nougain"
+URL_DATABASE2 = "mysql+aiomysql://root:@localhost:3306/nougainv2"
 
 engine2 = create_async_engine(
     URL_DATABASE2,

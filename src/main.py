@@ -53,6 +53,8 @@ origins = [
     "http://localhost:8081",
     "http://10.0.0.36:8000",
     "https://meteo.francetvinfo.fr/previsions-meteo-outremer/la-reunion",
+    "exp://192.168.1.14:8081",
+    "http://192.168.1.14:8081",
 ]
 app.add_middleware(
     CORSMiddleware,

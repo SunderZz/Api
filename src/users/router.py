@@ -120,7 +120,7 @@ async def create_user_type(
     password: str = Form(...),
     summary: Optional[str] = Form(None),
     isFarmer: bool = Form(...),
-    document: Optional[UploadFile] = File(None),
+    document: str = Form(...),
     user_repository: UsersRepository = Depends(UsersRepository),
     customers_repository: CustomersRepository = Depends(CustomersRepository),
     producers_repository: ProducersRepository = Depends(ProducersRepository),

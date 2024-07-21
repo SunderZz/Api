@@ -43,19 +43,18 @@ async def create_user_type_service(
     password: str,
     summary: Optional[str],
     isFarmer: bool,
-    document: Optional[UploadFile],
+    document: Optional[str],
     user_id: UserBase,
     producers_repository: ProducersRepository,
     customers_repository: CustomersRepository,
     db: AsyncSession,
 ):
     if isFarmer and document:
-        document_content = await document.read()
         await create_producer(
             ProducersCreateBase(
                 Id_Users=user_id.Id_Users,
                 description=summary,
-                Document=document_content,
+                Document=document,
             ),
             producers_repository,
             db,

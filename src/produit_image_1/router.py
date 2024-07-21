@@ -42,7 +42,7 @@ async def upload_file(
     produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository)
 ) -> ProduitImageBase:
     hashed_key = hash_key(product_id, field_name)
-    hashed_filename = hashed_key + ".png"
+    hashed_filename = hashed_key + ".jpg"
     link = f"/images/{hashed_filename}"
     hashed_link_value = hash_link(link)
 
@@ -74,7 +74,7 @@ async def get_image(
     produit_image_repository: ProduitImageRepository = Depends(ProduitImageRepository)
 ):
     hashed_key = hash_key(produit_image_id, field_name)
-    hashed_filename = hashed_key + ".png"
+    hashed_filename = hashed_key + ".jpg"
     produit_image = await get_produit_image_by_id_and_field_service(hashed_filename, produit_image_repository, db)
     
     if not produit_image:
